@@ -20,7 +20,7 @@ public class Student implements Serializable {
     @Column(name = "STU_ID", length = 32)
     private String stuId;
 
-    @Column(name = "STUDENTNO", unique = true, length = 16)
+    @Column(name = "STUDENTNO", unique = true, length = 16, updatable = false)
     private String studentNo;
 
     @Column(name = "STUNAME", length = 20)
@@ -149,6 +149,9 @@ public class Student implements Serializable {
 
     @Column(name = "GRADE", length = 20)
     private String grade;
+
+    @Column(name = "ACTIVE")
+    private Integer active; // '是否活跃'
 
     public String getStuId() {
         return stuId;
@@ -492,5 +495,13 @@ public class Student implements Serializable {
 
     public void setGrade(String grade) {
         this.grade = grade;
+    }
+
+    public Integer getActive() {
+        return active;
+    }
+
+    public void setActive(Integer active) {
+        this.active = active;
     }
 }

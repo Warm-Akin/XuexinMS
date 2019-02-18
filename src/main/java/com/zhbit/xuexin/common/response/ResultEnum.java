@@ -5,7 +5,9 @@ import com.zhbit.xuexin.common.constant.HttpCode;
 public enum ResultEnum {
 
     UnknownException(HttpCode.ERROR, "服务器异常！请重试或联系管理员"),
-    StudentNoDuplicatedException("10234", "学号信息重复，保存失败");
+    StudentNoDuplicatedException("10001", "学号信息重复，保存失败"),
+    FileIsNullException("10001", "文件为空，请重试"),
+    StudentUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试");
 //    DBDeleteCorrelationException("02001", "Please noted that %s are reference by others, you can't delete them."),
 //    MailFailException("02001", "Please noted that send mail to below vendor(s) failed %s"),
 //    VendorSaveDuplicatedException("02001", "Duplicated vendor code record!"),
