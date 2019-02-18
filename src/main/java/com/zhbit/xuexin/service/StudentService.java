@@ -18,22 +18,26 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 @Service
 public class StudentService {
 
     @Autowired
     StudentRepository studentRepository;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public PageResultVO<Student> findAll(Integer page, Integer pageSize) {
         // page's value start at '0'
@@ -188,6 +192,7 @@ public class StudentService {
                         student.setSex(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_SEX)));
                         student.setIdcardNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ID_CARD_NO)));
                         student.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ORGANIZATION_NAME)));
+                        // todo 学院
                         student.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_NAME)));
                         student.setMajorCategories(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_CATEGORY)));
                         student.setClassName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_CLASSNAME)));
@@ -216,6 +221,7 @@ public class StudentService {
                 }
                 // do save in jdbcTemplate -> 去重
                 // todo
+                saveStudentListForUpload(studentList);
             }
         } else
             throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
@@ -267,4 +273,110 @@ public class StudentService {
 //        } else // file is null
 //            throw new CustomeException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
     }
+
+    private void saveStudentListForUpload(List<Student> studentList) {
+        List<Student> studentExistList = studentRepository.findAll();
+        List<Student> duplicateStudentNoList = new ArrayList<>();
+        List<Student> newInserStudenttList = new ArrayList<>();
+        studentList.forEach(student -> {
+            Boolean isExist = compareStudentNo(student, studentExistList);
+            if (isExist)
+                duplicateStudentNoList.add(student);
+            else {
+                // set ID
+                student.setStuId(UUID.randomUUID().toString().replace("-", ""));
+                newInserStudenttList.add(student);
+            }
+        });
+        // insert the new records
+        if (!newInserStudenttList.isEmpty())
+            insertStudents(newInserStudenttList);
+
+    }
+
+    private Boolean compareStudentNo(Student student, List<Student> studentExistList) {
+        int listSize = studentExistList.size();
+        Boolean isExist = false;
+        for (int i = 0; i < listSize; i++) {
+            if (student.getStudentNo().trim().equals(studentExistList.get(i).getStudentNo())) {
+                isExist = true;
+                break;
+            }
+        }
+        // 当前学号不存在，则加入现有的学生List
+        if (!isExist)
+            studentExistList.add(student);
+        return isExist;
+    }
+
+    public int insertStudents(List<Student> students) {
+        // todo 学院id
+        String sql = "INSERT INTO t_students(STU_ID, STUDENTNO, STUNAME, SEX, IDCARDNO, ORG_NAME, MAJOR ,MAJORCATEGORIES, CLASSNAME, POLITICALSTATUS, NATION, NATIVEPLACE," +
+                " FROM_PLACE, EDUCATIONSYSTEM, SCHOOLINGLENGTH, CULTIVATEDIRECTION, ACCEPTANCEDATE, MIDDLESCHOOL, EMAIL, MOBILENO, FAMILYTELNO, POSTCODE, TRAVELRANGE, ADDRESS, SKILL) " +
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                Student student = students.get(i);
+                preparedStatement.setString(1, student.getStuId());
+                preparedStatement.setString(2, student.getStudentNo());
+                preparedStatement.setString(3, student.getStudentName());
+                preparedStatement.setString(4, student.getSex());
+                preparedStatement.setString(5, student.getIdcardNo());
+                preparedStatement.setString(6, student.getOrgName());
+                preparedStatement.setString(7, student.getMajor());
+                preparedStatement.setString(8, student.getMajorCategories());
+                preparedStatement.setString(9, student.getClassName());
+                preparedStatement.setString(10, student.getPoliticalStatus());
+                preparedStatement.setString(11, student.getNation());
+                preparedStatement.setString(12, student.getNativePlace());
+                preparedStatement.setString(13, student.getFromPlace());
+                preparedStatement.setInt(14, student.getEducationSystem());
+                preparedStatement.setInt(15, student.getSchoolingLength());
+                preparedStatement.setString(16, student.getCultivateDirection());
+                preparedStatement.setDate(17, (java.sql.Date) student.getAcceptanceDate());
+                preparedStatement.setString(18, student.getMiddleSchool());
+                preparedStatement.setString(19, student.getEmail());
+                preparedStatement.setString(20, student.getMobileNo());
+                preparedStatement.setString(21, student.getFamilyTelNo());
+                preparedStatement.setString(22, student.getPostcode());
+                preparedStatement.setString(23, student.getTravelRange());
+                preparedStatement.setString(24, student.getAddress());
+                preparedStatement.setString(25, student.getSkill());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return students.size();
+            }
+        }).length;
+    }
+
+//    public int insertVendors(List<ESGVendor> esgVendors) {
+//        String sql = "INSERT INTO ESG_VENDOR(ID, VENDOR_CODE, VENDOR_NAME, EMAIL, REGION, APPLICANT, COMPANY ,REQUIRED, CREATED_DATE, CREATED_BY, MODIFIED_DATE, MODIFIED_BY) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+//        return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+//
+//            @Override
+//            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+//                ESGVendor esgVendor = esgVendors.get(i);
+//                preparedStatement.setString(1, esgVendor.getId());
+//                preparedStatement.setString(2, esgVendor.getVendorCode());
+//                preparedStatement.setString(3, esgVendor.getVendorName());
+//                preparedStatement.setString(4, esgVendor.getEmail());
+//                preparedStatement.setString(5, esgVendor.getRegion());
+//                preparedStatement.setString(6, esgVendor.getApplicant());
+//                preparedStatement.setString(7, esgVendor.getCompany());
+//                preparedStatement.setString(8, String.valueOf(esgVendor.getRequired()));
+//                preparedStatement.setDate(9, new java.sql.Date(new Date().getTime()));
+//                preparedStatement.setString(10, esgVendor.getCreatedBy());
+//                preparedStatement.setDate(11, new java.sql.Date(new Date().getTime()));
+//                preparedStatement.setString(12, esgVendor.getModifiedBy());
+//            }
+//            @Override
+//            public int getBatchSize() {
+//                return esgVendors.size();
+//            }
+//        }).length;
+//    }
 }
