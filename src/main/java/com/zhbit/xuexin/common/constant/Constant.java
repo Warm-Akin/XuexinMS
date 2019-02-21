@@ -3,6 +3,7 @@ package com.zhbit.xuexin.common.constant;
 public class Constant {
 
     public static final Integer ACTIVE = 1;
+    public static final String GRADE_PREFIX = "20";
 
     // For student upload
     public static final Integer INDEX_STUDENT_NO = 0;

@@ -145,7 +145,7 @@ public class Student implements Serializable {
     private String parentOrgId;
 
     @Column(name = "SCORE")
-    private double score;
+    private Double score;
 
     @Column(name = "GRADE", length = 20)
     private String grade;
@@ -481,14 +481,6 @@ public class Student implements Serializable {
         this.parentOrgId = parentOrgId;
     }
 
-    public double getScore() {
-        return score;
-    }
-
-    public void setScore(double score) {
-        this.score = score;
-    }
-
     public String getGrade() {
         return grade;
     }
@@ -503,5 +495,13 @@ public class Student implements Serializable {
 
     public void setActive(Integer active) {
         this.active = active;
+    }
+
+    public Double getScore() {
+        return score;
+    }
+
+    public void setScore(Double score) {
+        this.score = score;
     }
 }

@@ -159,7 +159,7 @@ public class StudentService {
                 student.setMajorCategories(currentStudent.getMajorCategories());
                 student.setEducationSystem(currentStudent.getEducationSystem());
             }
-            student.setBirthday(DateUtil.formatDate(student.getIdcardNo().substring(6, 14)));
+            student.setBirthday(DateUtil.formatDate(student.getIdcardNo().substring(6, 13)));
             studentRepository.save(student);
         }
     }
@@ -192,7 +192,7 @@ public class StudentService {
                         student.setSex(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_SEX)));
                         student.setIdcardNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ID_CARD_NO)));
                         student.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ORGANIZATION_NAME)));
-                        // todo 学院
+                        // todo 学院(判断是否存在)
                         student.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_NAME)));
                         student.setMajorCategories(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_CATEGORY)));
                         student.setClassName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_CLASSNAME)));
@@ -213,8 +213,9 @@ public class StudentService {
                         student.setTravelRange(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TRAVEL_RANGE)));
                         student.setAddress(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ADDRESS)));
                         student.setSkill(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_SKILL)));
-                        // Computed attribute -> Birthday
-                        student.setBirthday(DateUtil.formatDate(student.getIdcardNo().substring(6, 14)));
+                        // Computed attribute -> Birthday, Grade
+                        student.setBirthday(DateUtil.formatDate(student.getIdcardNo().substring(6, 13)));
+                        student.setGrade(Constant.GRADE_PREFIX + student.getStudentNo().substring(0, 2));
                         studentList.add(student);
                     } else
                         throw new CustomException(String.format(ResultEnum.StudentUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.StudentUploadIncomplete.getCode());
@@ -225,73 +226,27 @@ public class StudentService {
             }
         } else
             throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
-
-
-//        if (file != null) {
-//            Workbook wb = ExcelUtil.getWorkbookFromFile(file);
-//            if (wb != null) {
-//                Sheet sheet = wb.getSheetAt(0);
-//                Iterator<Row> rowIterator = sheet.rowIterator();
-//                Row row = null;
-//                // Ignore the title row
-//                rowIterator.next();
-//                List<ESGVendor> esgVendorList = new ArrayList<>();
-//                int rowIndex = 1;
-//                while (rowIterator.hasNext()) {
-//                    row = rowIterator.next();
-//                    if (ExcelUtil.isFull(row, Constant.INDEX_VENDOR_CODE, Constant.INDEX_VENDOR_REQUIRED)) {
-//                        String vendorCode = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_CODE));
-//                        String vendorName = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_NAME));
-//                        String email = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_EMAIL));
-//                        String region = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_REGION));
-//                        String applicant = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_APPLICANT));
-//                        String company = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_COMPANY));
-//                        String strRequired = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_VENDOR_REQUIRED));
-//                        ESGVendor esgVendor = new ESGVendor();
-//                        esgVendor.setVendorCode(vendorCode);
-//                        esgVendor.setVendorName(vendorName);
-//                        esgVendor.setEmail(email);
-//                        esgVendor.setRegion(region);
-//                        esgVendor.setApplicant(applicant);
-//                        esgVendor.setCompany(company);
-//                        if (Constant.Y.equals(strRequired.toUpperCase()) || Constant.YES.equals(strRequired.toUpperCase())) {
-//                            esgVendor.setRequired(1);
-//                        } else {
-//                            esgVendor.setRequired(0);
-//                        }
-//                        esgVendorList.add(esgVendor);
-//                    } else {
-//                        //some columns of the file is empty
-//                        throw new CustomeException(String.format(ResultEnum.VendorUploadIncomplete.getMessage(), rowIndex), ResultEnum.VendorUploadIncomplete.getCode());
-//                    }
-//                    rowIndex += 1;
-//                }
-//                // save
-//                saveVendorWithRewrite(esgVendorList, userAuditor);
-//            } else // WorkBook is null
-//                throw new CustomeException(ResultEnum.WorkBookIsNullException.getMessage(), ResultEnum.WorkBookIsNullException.getCode());
-//        } else // file is null
-//            throw new CustomeException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
     }
 
     private void saveStudentListForUpload(List<Student> studentList) {
         List<Student> studentExistList = studentRepository.findAll();
         List<Student> duplicateStudentNoList = new ArrayList<>();
-        List<Student> newInserStudenttList = new ArrayList<>();
+        List<Student> newInsertStudentList = new ArrayList<>();
         studentList.forEach(student -> {
             Boolean isExist = compareStudentNo(student, studentExistList);
             if (isExist)
                 duplicateStudentNoList.add(student);
             else {
-                // set ID
+                // set ID and ACTIVE
                 student.setStuId(UUID.randomUUID().toString().replace("-", ""));
-                newInserStudenttList.add(student);
+                student.setActive(Constant.ACTIVE);
+                newInsertStudentList.add(student);
             }
         });
         // insert the new records
-        if (!newInserStudenttList.isEmpty())
-            insertStudents(newInserStudenttList);
-
+        if (!newInsertStudentList.isEmpty())
+            insertStudents(newInsertStudentList); // todo 学院id password
+        // todo duplicateStudentList
     }
 
     private Boolean compareStudentNo(Student student, List<Student> studentExistList) {
@@ -309,11 +264,11 @@ public class StudentService {
         return isExist;
     }
 
-    public int insertStudents(List<Student> students) {
+    private int insertStudents(List<Student> students) {
         // todo 学院id
         String sql = "INSERT INTO t_students(STU_ID, STUDENTNO, STUNAME, SEX, IDCARDNO, ORG_NAME, MAJOR ,MAJORCATEGORIES, CLASSNAME, POLITICALSTATUS, NATION, NATIVEPLACE," +
-                " FROM_PLACE, EDUCATIONSYSTEM, SCHOOLINGLENGTH, CULTIVATEDIRECTION, ACCEPTANCEDATE, MIDDLESCHOOL, EMAIL, MOBILENO, FAMILYTELNO, POSTCODE, TRAVELRANGE, ADDRESS, SKILL) " +
-                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                " FROM_PLACE, EDUCATIONSYSTEM, SCHOOLINGLENGTH, CULTIVATEDIRECTION, ACCEPTANCEDATE, MIDDLESCHOOL, EMAIL, MOBILENO, FAMILYTELNO, POSTCODE, TRAVELRANGE, ADDRESS, SKILL, GRADE, ACTIVE, BIRTHDAY) " +
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 
             @Override
@@ -335,7 +290,7 @@ public class StudentService {
                 preparedStatement.setInt(14, student.getEducationSystem());
                 preparedStatement.setInt(15, student.getSchoolingLength());
                 preparedStatement.setString(16, student.getCultivateDirection());
-                preparedStatement.setDate(17, (java.sql.Date) student.getAcceptanceDate());
+                preparedStatement.setDate(17, new java.sql.Date(student.getAcceptanceDate().getTime()));
                 preparedStatement.setString(18, student.getMiddleSchool());
                 preparedStatement.setString(19, student.getEmail());
                 preparedStatement.setString(20, student.getMobileNo());
@@ -344,6 +299,9 @@ public class StudentService {
                 preparedStatement.setString(23, student.getTravelRange());
                 preparedStatement.setString(24, student.getAddress());
                 preparedStatement.setString(25, student.getSkill());
+                preparedStatement.setString(26, student.getGrade());
+                preparedStatement.setInt(27, student.getActive());
+                preparedStatement.setDate(28, new java.sql.Date(student.getBirthday().getTime()));
             }
 
             @Override
@@ -352,31 +310,4 @@ public class StudentService {
             }
         }).length;
     }
-
-//    public int insertVendors(List<ESGVendor> esgVendors) {
-//        String sql = "INSERT INTO ESG_VENDOR(ID, VENDOR_CODE, VENDOR_NAME, EMAIL, REGION, APPLICANT, COMPANY ,REQUIRED, CREATED_DATE, CREATED_BY, MODIFIED_DATE, MODIFIED_BY) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-//        return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-//
-//            @Override
-//            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
-//                ESGVendor esgVendor = esgVendors.get(i);
-//                preparedStatement.setString(1, esgVendor.getId());
-//                preparedStatement.setString(2, esgVendor.getVendorCode());
-//                preparedStatement.setString(3, esgVendor.getVendorName());
-//                preparedStatement.setString(4, esgVendor.getEmail());
-//                preparedStatement.setString(5, esgVendor.getRegion());
-//                preparedStatement.setString(6, esgVendor.getApplicant());
-//                preparedStatement.setString(7, esgVendor.getCompany());
-//                preparedStatement.setString(8, String.valueOf(esgVendor.getRequired()));
-//                preparedStatement.setDate(9, new java.sql.Date(new Date().getTime()));
-//                preparedStatement.setString(10, esgVendor.getCreatedBy());
-//                preparedStatement.setDate(11, new java.sql.Date(new Date().getTime()));
-//                preparedStatement.setString(12, esgVendor.getModifiedBy());
-//            }
-//            @Override
-//            public int getBatchSize() {
-//                return esgVendors.size();
-//            }
-//        }).length;
-//    }
 }
