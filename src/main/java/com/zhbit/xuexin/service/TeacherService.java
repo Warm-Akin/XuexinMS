@@ -4,6 +4,7 @@ import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
+import com.zhbit.xuexin.common.util.DateUtil;
 import com.zhbit.xuexin.common.util.ExcelUtil;
 import com.zhbit.xuexin.dto.TeacherDto;
 import com.zhbit.xuexin.model.Teacher;
@@ -17,22 +18,26 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 @Service
 public class TeacherService {
 
     @Autowired
     TeacherRepository teacherRepository;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public PageResultVO<Teacher> findAll(Integer page, Integer pageSize) {
         // page's value start at '0'
@@ -101,12 +106,12 @@ public class TeacherService {
                 List<Predicate> predicateList = new ArrayList<>();
                 if (!StringUtils.isEmpty(teacherDto.getTeacherNo())) {
                     Path teacherNo = root.get("teacherNo");
-                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherNo), "%" + teacherDto.getTeacherNo().toUpperCase() + "%");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherNo), "%" + teacherDto.getTeacherNo() + "%");
                     predicateList.add(p);
                 }
                 if (!StringUtils.isEmpty(teacherDto.getTeacherName())) {
                     Path teacherName = root.get("teacherName");
-                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherName), "%" + teacherDto.getTeacherName().toUpperCase() + "%");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherName), "%" + teacherDto.getTeacherName() + "%");
                     predicateList.add(p);
                 }
                 if (!StringUtils.isEmpty(teacherDto.getSex())) {
@@ -157,61 +162,146 @@ public class TeacherService {
 
     public void uploadTeacherList(MultipartFile file) {
         if (null != file) {
-            // todo import
             Workbook wb = ExcelUtil.getWorkbookFromFile(file);
             if (wb != null) {
-                Sheet sheet=wb.getSheetAt(0);
+                Sheet sheet = wb.getSheetAt(0);
                 Iterator<Row> rowIterator=sheet.rowIterator();
                 // Ignore the title row
-                Row row=rowIterator.next();
+                Row row = rowIterator.next();
                 List<Teacher> teacherList=new ArrayList<>();
                 int rowIndex=1;
                 while (rowIterator.hasNext()) {
-                    row=rowIterator.next();
-                    rowIndex+=1;
-                    // student's necessary information can't be null
-//                    if (ExcelUtil.isFull(row, Constant.INDEX_STUDENT_NO, Constant.INDEX_CLASSNAME)) {
-//                        Student student = new Student();
-//                        student.setStudentNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_NO)));
-//                        student.setStudentName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_NAME)));
-//                        student.setSex(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_SEX)));
-//                        student.setIdcardNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ID_CARD_NO)));
-//                        student.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ORGANIZATION_NAME)));
-//                        // todo 学院(判断是否存在)
-//                        student.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_NAME)));
-//                        student.setMajorCategories(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_CATEGORY)));
-//                        student.setClassName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_CLASSNAME)));
-//                        // set unnecessary columns
-//                        student.setPoliticalStatus(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_POLITICAL_STATUS)));
-//                        student.setNation(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_NATION)));
-//                        student.setNativePlace(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_NATIVE_PLACE)));
-//                        student.setFromPlace(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_FROM_PLACE)));
-//                        student.setEducationSystem(Integer.parseInt(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_EDUCATION_SYSTEM))));
-//                        student.setSchoolingLength(Integer.parseInt(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_SCHOOLING_LENGTH))));
-//                        student.setCultivateDirection(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_CULTIVATE_DIRECTION)));
-//                        student.setAcceptanceDate(DateUtil.formatDate(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ACCEPTANCE_DATE))));
-//                        student.setMiddleSchool(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MIDDLE_SCHOOL)));
-//                        student.setEmail(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_EMAIL)));
-//                        student.setMobileNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MOBILE_NO)));
-//                        student.setFamilyTelNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_FAMILY_TEL_NO)));
-//                        student.setPostcode(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_POST_CODE)));
-//                        student.setTravelRange(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TRAVEL_RANGE)));
-//                        student.setAddress(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ADDRESS)));
-//                        student.setSkill(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_SKILL)));
-//                        // Computed attribute -> Birthday, Grade
-//                        student.setBirthday(DateUtil.formatDate(student.getIdcardNo().substring(6, 13)));
-//                        student.setGrade(Constant.GRADE_PREFIX + student.getStudentNo().substring(0, 2));
-//                        studentList.add(student);
-//                    } else
-//                        throw new CustomException(String.format(ResultEnum.StudentUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.StudentUploadIncomplete.getCode());
+                    row = rowIterator.next();
+                    rowIndex += 1;
+                    // teacher's necessary information can't be null
+                    if (ExcelUtil.isFull(row, Constant.INDEX_TEACHER_NO, Constant.INDEX_TEACHER_NAME)) {
+                        Teacher teacher = new Teacher();
+                        teacher.setTeacherNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_NO)));
+                        teacher.setTeacherName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_NAME)));
+                        String sex = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_SEX));
+                        if (!StringUtils.isEmpty(sex) && "男".equals(sex)) {
+                            sex = "0";
+                        } else if (!StringUtils.isEmpty(sex) && "女".equals(sex)) {
+                            sex = "1";
+                        } else {
+                            sex = "";
+                        }
+                        teacher.setSex(sex);
+                        Date birthday = !"".equals(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY))) ? DateUtil.formatDate(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY)).replaceAll("-", "")) : null;
+                        teacher.setBirthday(birthday);
+                        // todo check orgName
+                        teacher.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ORGNAME)));
+                        teacher.setTelNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_TELNO)));
+                        teacher.setEmail(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_EAMIL)));
+                        teacher.setAddress(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ADDRESS)));
+                        teacher.setCategory(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_CATEGORY)));
+                        teacher.setEducation(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_EDUCATION)));
+                        teacher.setDegree(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_DEGREE)));
+                        teacher.setDuty(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_DUTY)));
+                        teacher.setAcademicTitle(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ACADEMICTITLE)));
+                        teacher.setInvigilatorFlag(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_INVIGILATORFLAG)));
+                        teacher.setResearchDirection(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_RESEARCHDIRECTION)));
+                        teacher.setIntroduce(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_INTRODUCE)));
+                        teacher.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_MAJOR)));
+                        teacher.setGraduateSchool(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_GRADUATE_SCHOOL)));
+                        teacher.setQualificationFlag(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_QUALIFICATIONFLAG)));
+                        teacher.setJobStatus(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_JOBSTATUS)));
+                        teacher.setIsLab(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ISLAB)));
+                        teacher.setIsOutHire(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ISOUTHIRE)));
+                        teacher.setPoliticalStatus(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_POLITICALSTATUS)));
+                        teacher.setNation(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_NATION)));
+                        teacherList.add(teacher);
+                    } else
+                        throw new CustomException(String.format(ResultEnum.TeacherUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.TeacherUploadIncomplete.getCode());
                 }
-//                // do save in jdbcTemplate -> 去重
-//                // todo
-//                saveStudentListForUpload(studentList);
-            }
-//        } else
-//            throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
+                // do save in jdbcTemplate -> 去重
+                saveTeacherListForUpload(teacherList);
+            } else
+            throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
         }
     }
 
+    private void saveTeacherListForUpload(List<Teacher> teacherList) {
+        List<Teacher> teacherExistList = teacherRepository.findAll();
+        List<Teacher> duplicateTeacherNoList = new ArrayList<>();
+        List<Teacher> newInsertTeacherList = new ArrayList<>();
+        teacherList.forEach(teacher -> {
+            Boolean isExist = compareTeacherNo(teacher, teacherExistList);
+            if (isExist)
+                duplicateTeacherNoList.add(teacher);
+            else {
+                // set ID and ACTIVE
+                teacher.setTeacherId(UUID.randomUUID().toString().replace("-", ""));
+                teacher.setActive(Constant.ACTIVE);
+                newInsertTeacherList.add(teacher);
+            }
+        });
+        // insert the new records
+        if (!newInsertTeacherList.isEmpty())
+            insertTeachers(newInsertTeacherList); // todo 学院id password
+        // todo duplicateTeacherList
+    }
+
+    private Boolean compareTeacherNo(Teacher teacher, List<Teacher> teacherExistList) {
+        int listSize = teacherExistList.size();
+        Boolean isExist = false;
+        for (int i = 0; i < listSize; i++) {
+            if (teacher.getTeacherNo().trim().equals(teacherExistList.get(i).getTeacherNo())) {
+                isExist = true;
+                break;
+            }
+        }
+        // 当前工号不存在，则加入现有的教师List
+        if (!isExist)
+            teacherExistList.add(teacher);
+        return isExist;
+    }
+
+    private int insertTeachers(List<Teacher> teachers) {
+        // todo 学院id
+        String sql = "INSERT INTO t_teacherinfo(ID, EMPLOY_NO, EMPLOY_NAME, SEX, BIRTHDAY, ORG_NAME, TELNO ,EMAIL, ADDRESS, CATEGORY, EDUCATION, DEGREE," +
+                " DUTY, ACDEMICTITLE, INVIGILATORFLAG, RESEARCHDIRECTION, INTRODUCE, MAJOR, GRADUATE, QUALIFICATIONFLAG, JOBSTATUS, ISLAB, ISOUTHIRE, POLITICALSTATUS, NATION, ACTIVE) " +
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+                Teacher teacher = teachers.get(i);
+                preparedStatement.setString(1, teacher.getTeacherId());
+                preparedStatement.setString(2, teacher.getTeacherNo());
+                preparedStatement.setString(3, teacher.getTeacherName());
+                preparedStatement.setString(4, teacher.getSex());
+                if (null != teacher.getBirthday())
+                    preparedStatement.setDate(5, new java.sql.Date(teacher.getBirthday().getTime()));
+                else
+                    preparedStatement.setDate(5, null);
+                preparedStatement.setString(6, teacher.getOrgName());
+                preparedStatement.setString(7, teacher.getTelNo());
+                preparedStatement.setString(8, teacher.getEmail());
+                preparedStatement.setString(9, teacher.getAddress());
+                preparedStatement.setString(10, teacher.getCategory());
+                preparedStatement.setString(11, teacher.getEducation());
+                preparedStatement.setString(12, teacher.getDegree());
+                preparedStatement.setString(13, teacher.getDuty());
+                preparedStatement.setString(14, teacher.getAcademicTitle());
+                preparedStatement.setString(15, teacher.getInvigilatorFlag());
+                preparedStatement.setString(16, teacher.getResearchDirection());
+                preparedStatement.setString(17, teacher.getIntroduce());
+                preparedStatement.setString(18, teacher.getMajor());
+                preparedStatement.setString(19, teacher.getGraduateSchool());
+                preparedStatement.setString(20, teacher.getQualificationFlag());
+                preparedStatement.setString(21, teacher.getJobStatus());
+                preparedStatement.setString(22, teacher.getIsLab());
+                preparedStatement.setString(23, teacher.getIsOutHire());
+                preparedStatement.setString(24, teacher.getPoliticalStatus());
+                preparedStatement.setString(25, teacher.getNation());
+                preparedStatement.setInt(26, teacher.getActive());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return teachers.size();
+            }
+        }).length;
+    }
 }

@@ -40,7 +40,7 @@ public class TeacherController {
     }
 
     @PostMapping(value = "/upload")
-    public ResponseEntity uploadStudentList(MultipartFile file) {
+    public ResponseEntity uploadTeacherList(MultipartFile file) {
         teacherService.uploadTeacherList(file);
         return ResponseUtil.success(HttpStatus.OK);
     }

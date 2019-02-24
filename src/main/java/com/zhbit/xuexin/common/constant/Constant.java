@@ -30,7 +30,31 @@ public class Constant {
     public static final Integer INDEX_TRAVEL_RANGE = 21;
     public static final Integer INDEX_ADDRESS = 22;
     public static final Integer INDEX_SKILL = 23;
-//    public static final Integer
 
+    // For upload teacher list
+    public static final Integer INDEX_TEACHER_NO = 0;
+    public static final Integer INDEX_TEACHER_NAME = 1;
+    public static final Integer INDEX_TEACHER_SEX = 2;
+    public static final Integer INDEX_TEACHER_BIRTHDAY = 3;
+    public static final Integer INDEX_TEACHER_ORGNAME = 4;
+    public static final Integer INDEX_TEACHER_TELNO = 5;
+    public static final Integer INDEX_TEACHER_EAMIL = 6;
+    public static final Integer INDEX_TEACHER_ADDRESS = 7;
+    public static final Integer INDEX_TEACHER_CATEGORY = 8;
+    public static final Integer INDEX_TEACHER_EDUCATION = 9;
+    public static final Integer INDEX_TEACHER_DEGREE = 10;
+    public static final Integer INDEX_TEACHER_DUTY = 11;
+    public static final Integer INDEX_TEACHER_ACADEMICTITLE = 12;
+    public static final Integer INDEX_TEACHER_INVIGILATORFLAG = 13;
+    public static final Integer INDEX_TEACHER_RESEARCHDIRECTION = 14;
+    public static final Integer INDEX_TEACHER_INTRODUCE = 15;
+    public static final Integer INDEX_TEACHER_MAJOR = 16;
+    public static final Integer INDEX_TEACHER_GRADUATE_SCHOOL = 17;
+    public static final Integer INDEX_TEACHER_QUALIFICATIONFLAG = 18;
+    public static final Integer INDEX_TEACHER_JOBSTATUS = 19;
+    public static final Integer INDEX_TEACHER_ISLAB = 20;
+    public static final Integer INDEX_TEACHER_ISOUTHIRE = 21;
+    public static final Integer INDEX_TEACHER_POLITICALSTATUS = 22;
+    public static final Integer INDEX_TEACHER_NATION = 23;
 
 }
