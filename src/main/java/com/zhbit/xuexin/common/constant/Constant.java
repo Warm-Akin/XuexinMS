@@ -57,4 +57,22 @@ public class Constant {
     public static final Integer INDEX_TEACHER_POLITICALSTATUS = 22;
     public static final Integer INDEX_TEACHER_NATION = 23;
 
+
+    // for upload course information list
+    public static final Integer INDEX_COURSE_CODE = 0;
+    public static final Integer INDEX_COURSE_NAME = 1;
+    public static final Integer INDEX_COURSE_ACADEMICYEAR = 2;
+    public static final Integer INDEX_COURSE_TERM =3;
+    public static final Integer INDEX_COURSE_TOTAL_HOURS = 4;
+    public static final Integer INDEX_COURSE_LAB_HOURS = 5;
+    public static final Integer INDEX_COURSE_SELECTED_COURSE_NO = 6;
+    public static final Integer INDEX_COURSE_LIMIT_STUDENT_NUM = 7;
+    public static final Integer INDEX_COURSE_STUDENT_NUM = 8;
+    public static final Integer INDEX_COURSE_CREDIT = 9;
+    public static final Integer INDEX_COURSE_COURSE_TYPE = 10;
+    public static final Integer INDEX_COURSE_BELONG_TO = 11;
+    public static final Integer INDEX_COURSE_TEACHER_NO = 12;
+    public static final Integer INDEX_COURSE_TEACHER_NAME = 13;
+    public static final Integer INDEX_COURSE_CLASSINFO = 14;
+    public static final Integer INDEX_COURSE_MEMO = 15;
 }

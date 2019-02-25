@@ -102,6 +102,9 @@ public class Course {
     @Column(name = "LIMITSTUDENTNUM")
     private Double limitStudentNum; // 限选学生总数
 
+    @Column(name = "ACTIVE")
+    private Integer active;
+
     public String getCourseId() {
         return courseId;
     }
@@ -324,5 +327,13 @@ public class Course {
 
     public void setLimitStudentNum(Double limitStudentNum) {
         this.limitStudentNum=limitStudentNum;
+    }
+
+    public Integer getActive() {
+        return active;
+    }
+
+    public void setActive(Integer active) {
+        this.active = active;
     }
 }

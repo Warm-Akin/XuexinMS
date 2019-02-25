@@ -1,6 +1,7 @@
 package com.zhbit.xuexin.controller;
 
 import com.zhbit.xuexin.common.util.ResponseUtil;
+import com.zhbit.xuexin.dto.CourseDto;
 import com.zhbit.xuexin.model.Course;
 import com.zhbit.xuexin.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(value = "/xuexin/admin/course")
@@ -29,6 +31,17 @@ public class CourseController {
     @PostMapping("/save")
     public ResponseEntity save(@RequestBody Course course) {
         courseService.handleSave(course);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/findByConditions")
+    public ResponseEntity findCourseInfoByConditions(@RequestBody CourseDto courseDto) {
+        return ResponseUtil.success(courseService.findByConditions(courseDto));
+    }
+
+    @PostMapping(value = "/upload")
+    public ResponseEntity uploadTeacherList(MultipartFile file) {
+        courseService.uploadCourseInfoList(file);
         return ResponseUtil.success(HttpStatus.OK);
     }
 }
