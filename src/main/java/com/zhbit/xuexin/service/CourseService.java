@@ -194,7 +194,8 @@ public class CourseService {
                             course.setStudentNum(studentNum);
                         } else // todo 限选人数 > 选择人数
                             throw new CustomException(String.format(ResultEnum.CourseInfoError.getMessage(), String.valueOf(rowIndex)), ResultEnum.CourseInfoError.getCode());
-
+                        Double credit = Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_CREDIT)));
+                        course.setCredit(credit);
                         course.setCourseType(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_COURSE_TYPE)));
                         course.setBelongTo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_BELONG_TO)));
                         course.setTeacherNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_TEACHER_NO)));
