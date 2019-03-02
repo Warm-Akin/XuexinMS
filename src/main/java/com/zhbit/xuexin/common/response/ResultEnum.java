@@ -5,6 +5,7 @@ import com.zhbit.xuexin.common.constant.HttpCode;
 public enum ResultEnum {
 
     UnknownException(HttpCode.ERROR, "服务器异常！请重试或联系管理员"),
+    AccountInvalidException("10001", "用户名或密码错误，请重试"),
     StudentNoDuplicatedException("10001", "学号信息重复，保存失败"),
     FileIsNullException("10001", "文件为空，请重试"),
     StudentUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试"),

@@ -1,5 +1,6 @@
 package com.zhbit.xuexin.controller;
 
+import com.zhbit.xuexin.common.constant.HttpCode;
 import com.zhbit.xuexin.common.util.ResponseUtil;
 import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.service.LoginService;
@@ -16,8 +17,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody User user) {
-        Boolean isSuccess = loginService.checkLogin(user);
-        System.out.println(isSuccess);
-        return ResponseUtil.success(isSuccess);
+        loginService.checkLogin(user);
+        return ResponseUtil.success(HttpCode.SUCCESS);
     }
 }
