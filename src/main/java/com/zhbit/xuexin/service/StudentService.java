@@ -148,6 +148,7 @@ public class StudentService {
             } else {
                 // update
                 // not allow to modify some Columns
+                // todo
                 Student currentStudent = studentRepository.findById(student.getStuId()).orElse(null);
                 student.setStudentNo(currentStudent.getStudentNo());
                 student.setAcceptanceDate(currentStudent.getAcceptanceDate());
@@ -317,4 +318,9 @@ public class StudentService {
             student = studentRepository.findByStudentNo(studentNo);
         return student;
     }
+
+//    @Transactional
+//    public void updateSelfInformation(Student student) {
+//        System.out.println(student.getStuId());
+//    }
 }
