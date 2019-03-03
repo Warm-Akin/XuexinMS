@@ -310,4 +310,11 @@ public class StudentService {
             }
         }).length;
     }
+
+    public Student findByStudentNo(String studentNo) {
+        Student student = null;
+        if (!StringUtils.isEmpty(studentNo))
+            student = studentRepository.findByStudentNo(studentNo);
+        return student;
+    }
 }

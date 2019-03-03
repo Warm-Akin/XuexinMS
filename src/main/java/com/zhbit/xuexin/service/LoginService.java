@@ -3,7 +3,11 @@ package com.zhbit.xuexin.service;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.SecurityUtil;
+import com.zhbit.xuexin.model.Student;
+import com.zhbit.xuexin.model.Teacher;
 import com.zhbit.xuexin.model.User;
+import com.zhbit.xuexin.repository.StudentRepository;
+import com.zhbit.xuexin.repository.TeacherRepository;
 import com.zhbit.xuexin.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,16 +19,44 @@ public class LoginService {
     @Autowired
     UserRepository userRepository;
 
-    public void checkLogin(User user) {
+    @Autowired
+    StudentRepository studentRepository;
+
+    @Autowired
+    TeacherRepository teacherRepository;
+
+    public User checkLogin(User user) {
         if (user != null && !StringUtils.isEmpty(user.getEmployName()) && !StringUtils.isEmpty(user.getPassword())) {
             String userName = user.getEmployName();
             String password = SecurityUtil.GetMD5Code(user.getPassword());
+            String userType = "";
+            // userType = 2
             User currentUser = userRepository.findByEmployNameAndPassword(userName, password);
-            if (currentUser != null) {
-                // 验证成功，获取用户的权限
-                return;
-            } else
+            if (null != currentUser) {
+                userType = "2";
+            } else {
+                currentUser = new User();
+                currentUser.setEmployNo(userName);
+                // userType = 1
+                Student currentStudent = studentRepository.findByStudentNoAndPassword(userName, password);
+                if (null != currentStudent) {
+                    userType = "1";
+                } else {
+                    // userType = 0
+                    Teacher currentTeacher = teacherRepository.findByTeacherNoAndPassword(userName, password);
+                    if (null != currentTeacher) {
+                        userType = "0";
+                    }
+                }
+            }
+            if (!StringUtils.isEmpty(userType)) {
+                // 验证成功，获取权限信息
+                // todo
+                currentUser.setUserType(userType);
+            } else // 验证失败
                 throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
+            return currentUser;
         }
+        return null;
     }
 }

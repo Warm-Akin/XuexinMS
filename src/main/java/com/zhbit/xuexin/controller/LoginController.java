@@ -17,7 +17,7 @@ public class LoginController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody User user) {
-        loginService.checkLogin(user);
-        return ResponseUtil.success(HttpCode.SUCCESS);
+        User loginUser = loginService.checkLogin(user);
+        return ResponseUtil.success(loginUser);
     }
 }

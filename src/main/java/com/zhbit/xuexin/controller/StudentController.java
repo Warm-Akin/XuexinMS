@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/xuexin/student")
+@RequestMapping(value = "/xuexin/admin/student")
 public class StudentController {
 
     @Autowired

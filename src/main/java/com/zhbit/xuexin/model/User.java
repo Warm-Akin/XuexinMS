@@ -46,7 +46,7 @@ public class User implements Serializable {
     private String password;
 
     @Column(name = "USER_TYPE", length = 2)
-    private String userType;
+    private String userType; // 0 -> Teacher, 1 -> Student, 2 -> Admin
 
     @Column(name = "PARENT_ORG_ID", length = 32)
     private String parentOrgId;
