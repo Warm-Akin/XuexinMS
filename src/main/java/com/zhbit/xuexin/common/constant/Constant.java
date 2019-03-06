@@ -75,4 +75,6 @@ public class Constant {
     public static final Integer INDEX_COURSE_TEACHER_NAME = 13;
     public static final Integer INDEX_COURSE_CLASSINFO = 14;
     public static final Integer INDEX_COURSE_MEMO = 15;
+
+    public static final String PHOTO_DIRECTORY_PATH = "D:\\xuexinDoc\\studentPHOTO\\";
 }

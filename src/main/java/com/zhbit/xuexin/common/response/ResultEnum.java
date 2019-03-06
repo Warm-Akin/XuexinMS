@@ -13,7 +13,9 @@ public enum ResultEnum {
     TeacherNoDuplicatedException("10001", "教师工号信息重复，保存失败"),
     CourseCodeDuplicatedException("10001", "学号信息重复，保存失败"),
     CourseInfoError("10001", "位于[第 %s 行]的限选总人数和选课人数不符合要求，请检查后重试"),
-    CourseUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试");
+    CourseUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试"),
+    ResumePhotoIsNullException("1001", "文件为空，请重试"),
+    SaveResumePhotoException("1001", "图片上传失败，请重试");
 //    DBDeleteCorrelationException("02001", "Please noted that %s are reference by others, you can't delete them."),
 //    MailFailException("02001", "Please noted that send mail to below vendor(s) failed %s"),
 //    VendorSaveDuplicatedException("02001", "Duplicated vendor code record!"),
