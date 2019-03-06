@@ -7,6 +7,7 @@ import com.zhbit.xuexin.repository.StudentResumeRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -31,5 +32,10 @@ public class StudentResumeService {
             }
         }
         return studentResume;
+    }
+
+    @Transactional
+    public void handleSave(StudentResume studentResume) {
+        resumeRepository.save(studentResume);
     }
 }
