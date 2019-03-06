@@ -33,4 +33,10 @@ public class StudentResumeController {
         studentResumeService.saveResumePhoto(file,studentNo);
         return ResponseUtil.success(HttpStatus.OK);
     }
+
+    @GetMapping(value = "export/{studentNo}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity exportResume(@PathVariable("studentNo") String studentNo) {
+        studentResumeService.exportResume(studentNo);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
 }

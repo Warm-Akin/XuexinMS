@@ -122,7 +122,7 @@ public class Student implements Serializable {
     private String dqszj;
 
     @Column(name = "PHOTOPATH", length = 200)
-    private String photopath;
+    private String photoPath;
 
     @Column(name = "GRADUATEFLAG", length = 2)
     private String graduateFlag; // '毕业审核标志：\r\nY：毕业审核通过\nN：审核不通过'
@@ -425,12 +425,12 @@ public class Student implements Serializable {
         this.dqszj = dqszj;
     }
 
-    public String getPhotopath() {
-        return photopath;
+    public String getPhotoPath() {
+        return photoPath;
     }
 
-    public void setPhotopath(String photopath) {
-        this.photopath = photopath;
+    public void setPhotoPath(String photoPath) {
+        this.photoPath = photoPath;
     }
 
     public String getGraduateFlag() {
