@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Field;
 
@@ -48,7 +49,11 @@ public class StudentResumeService {
 
     @Transactional
     public void handleSave(StudentResume studentResume) {
+        // copy the same properties from resume
+        Student student = studentRepository.findByStudentNo(studentResume.getStudentNo());
+        BeanUtils.copyProperties(studentResume, student);
         resumeRepository.save(studentResume);
+        studentRepository.save(student);
     }
 
     @Transactional
@@ -67,7 +72,6 @@ public class StudentResumeService {
                 file.transferTo(targetFile);
                 studentResume.setPhotoPath(targetPath);
                 resumeRepository.save(studentResume);
-//                System.out.println("success");
             } catch (IOException e) {
                 throw new CustomException(ResultEnum.SaveResumePhotoException.getMessage(), ResultEnum.SaveResumePhotoException.getCode());
             }
@@ -75,12 +79,14 @@ public class StudentResumeService {
             throw new CustomException(ResultEnum.ResumePhotoIsNullException.getMessage(), ResultEnum.ResumePhotoIsNullException.getCode());
     }
 
-    public void exportResume(String studentNo) {
+    public void exportResume(String studentNo, HttpServletResponse response) throws IOException {
         if (!StringUtils.isEmpty(studentNo)) {
             StudentResume studentResume = resumeRepository.findByStudentNo(studentNo);
             createPdf(studentResume);
+            exportPdf("C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one-1.pdf", response);
         }
     }
+
 
     public void createPdf (StudentResume studentResume) {
         String templatePath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one.pdf";
@@ -96,6 +102,7 @@ public class StudentResumeService {
             stamper = new PdfStamper(pdfReader, bos);
             AcroFields fields = stamper.getAcroFields();
 
+            // todo 模板没有对应的表单域对象需要跳过
             for (Field field : studentResume.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 try {
@@ -106,7 +113,7 @@ public class StudentResumeService {
                         // 通过域名获取所在页和坐标，左下角为起点
                         int pageNo = fields.getFieldPositions("photoPath").get(0).page;
                         Rectangle signRect = fields.getFieldPositions("photoPath").get(0).position;
-                        fields.setField("photo", " ");
+                        fields.setField("photoPath", " ");
                         float x = signRect.getLeft();
                         float y = signRect.getBottom();
                         // 读图片
@@ -124,7 +131,7 @@ public class StudentResumeService {
                 }
             }
 
-            stamper.setFormFlattening(true);// 如果为false那么生成的PDF文件还能编辑，一定要设为true
+            stamper.setFormFlattening(true); // 如果为false那么生成的PDF文件还能编辑，一定要设为true
             stamper.close();
 
             Document doc = new Document();
@@ -140,6 +147,29 @@ public class StudentResumeService {
             e.printStackTrace();
         } catch (DocumentException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void exportPdf(String targetPath, HttpServletResponse response) throws IOException {
+        File file = new File(targetPath);
+
+        InputStream ins = new FileInputStream(file);
+        /* 设置文件ContentType类型，这样设置，会自动判断下载文件类型 */
+        response.setContentType("multipart/form-data");
+        /* 设置文件头：最后一个参数是设置下载文件名 */
+        response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+        try{
+            OutputStream os = response.getOutputStream();
+            byte[] b = new byte[1024];
+            int len;
+            while((len = ins.read(b)) > 0){
+                os.write(b,0,len);
+            }
+            os.flush();
+            os.close();
+            ins.close();
+        }catch (IOException ioe){
+            ioe.printStackTrace();
         }
     }
 }

@@ -14,7 +14,7 @@ public class Organization implements Serializable {
     @Id
     @GenericGenerator(name = "idGenerator", strategy = "uuid")
     @GeneratedValue(generator = "idGenerator")
-    @Column(name = "ORG_ID", length = 32)
+    @Column(name = "ORG_ID", length = 32, updatable = false)
     private String orgId;
     @Column(name = "ORG_NAME", length = 128)
     private String orgName;

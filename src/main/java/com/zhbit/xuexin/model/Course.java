@@ -16,7 +16,7 @@ public class Course {
     @Id
     @GenericGenerator(name = "generator", strategy = "uuid")
     @GeneratedValue(generator = "generator")
-    @Column(name = "ID", length = 32)
+    @Column(name = "ID", length = 32, updatable = false)
     private String courseId;
 
     @Column(name = "COURSECODE", unique = true, length = 20)

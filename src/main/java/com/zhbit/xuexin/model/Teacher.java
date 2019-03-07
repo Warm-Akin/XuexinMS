@@ -16,7 +16,7 @@ public class Teacher {
     @Id
     @GenericGenerator(name = "generator", strategy = "uuid")
     @GeneratedValue(generator = "generator")
-    @Column(name = "ID", length = 32)
+    @Column(name = "ID", length = 32, updatable = false)
     private String teacherId;
 
     @Column(name = "EMPLOY_NO", unique = true, length = 10, updatable = false)

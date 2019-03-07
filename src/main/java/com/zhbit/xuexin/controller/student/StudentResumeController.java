@@ -10,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 @RestController
 @RequestMapping(value = "/xuexin/student/resume")
 public class StudentResumeController {
@@ -30,13 +33,12 @@ public class StudentResumeController {
 
     @PostMapping(value = "/upload/{studentNo}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity uploadPhoto(@PathVariable("studentNo") String studentNo, MultipartFile file ) {
-        studentResumeService.saveResumePhoto(file,studentNo);
+        studentResumeService.saveResumePhoto(file, studentNo);
         return ResponseUtil.success(HttpStatus.OK);
     }
 
-    @GetMapping(value = "export/{studentNo}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity exportResume(@PathVariable("studentNo") String studentNo) {
-        studentResumeService.exportResume(studentNo);
-        return ResponseUtil.success(HttpStatus.OK);
+    @GetMapping(value = "/export")
+    public void exportResume(HttpServletResponse response, String studentNo) throws IOException {
+        studentResumeService.exportResume(studentNo, response);
     }
 }

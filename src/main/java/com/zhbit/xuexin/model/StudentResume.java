@@ -14,7 +14,7 @@ public class StudentResume {
     @Id
     @GenericGenerator(name = "generator", strategy = "uuid")
     @GeneratedValue(generator = "generator")
-    @Column(name = "ID", unique = true, nullable = false, length = 32)
+    @Column(name = "ID", unique = true, nullable = false, length = 32, updatable = false)
     private String id;
 
     @Column(name = "STUDENTNO", unique = true, nullable = false, length = 32)

@@ -17,7 +17,7 @@ public class Student implements Serializable {
     @Id
     @GenericGenerator(name = "generator", strategy = "uuid")
     @GeneratedValue(generator = "generator")
-    @Column(name = "STU_ID", length = 32)
+    @Column(name = "STU_ID", length = 32, updatable = false)
     private String stuId;
 
     @Column(name = "STUDENTNO", unique = true, length = 16, updatable = false)
