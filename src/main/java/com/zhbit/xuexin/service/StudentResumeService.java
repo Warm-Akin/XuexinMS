@@ -19,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Field;
 
@@ -171,5 +173,17 @@ public class StudentResumeService {
         }catch (IOException ioe){
             ioe.printStackTrace();
         }
+    }
+
+    public byte[] getImageByStudentNo(String studentNo) throws IOException {
+        StudentResume studentResume = resumeRepository.findByStudentNo(studentNo);
+        if (null != studentResume && !StringUtils.isEmpty(studentResume.getPhotoPath())) {
+            String photoPath = studentResume.getPhotoPath();
+            FileInputStream fileInputStream = new FileInputStream(new File(photoPath));
+            byte[] bytes = new byte[fileInputStream.available()];
+            fileInputStream.read(bytes,0, fileInputStream.available());
+            return bytes;
+        }
+        return null;
     }
 }

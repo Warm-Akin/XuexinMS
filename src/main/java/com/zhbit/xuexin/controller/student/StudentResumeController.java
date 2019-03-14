@@ -41,4 +41,10 @@ public class StudentResumeController {
     public void exportResume(HttpServletResponse response, String studentNo) throws IOException {
         studentResumeService.exportResume(studentNo, response);
     }
+
+    @GetMapping(value = "/findImageByStudentNo/{studentNo}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @ResponseBody
+    public byte[] getImageByStudentNo(@PathVariable("studentNo") String studentNo) throws IOException {
+        return studentResumeService.getImageByStudentNo(studentNo);
+    }
 }
