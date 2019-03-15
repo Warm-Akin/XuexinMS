@@ -14,27 +14,10 @@ public enum ResultEnum {
     CourseCodeDuplicatedException("10001", "学号信息重复，保存失败"),
     CourseInfoError("10001", "位于[第 %s 行]的限选总人数和选课人数不符合要求，请检查后重试"),
     CourseUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试"),
-    ResumePhotoIsNullException("1001", "文件为空，请重试"),
-    SaveResumePhotoException("1001", "图片上传失败，请重试");
-//    DBDeleteCorrelationException("02001", "Please noted that %s are reference by others, you can't delete them."),
-//    MailFailException("02001", "Please noted that send mail to below vendor(s) failed %s"),
-//    VendorSaveDuplicatedException("02001", "Duplicated vendor code record!"),
-//    VendorUploadIncomplete("02001", "Some of the content[row at %s] is invalid thus cannot be parsed. Please check and upload it again."),
-//    FileIsNullException("02001", "The file is null and please choose again."),
-//    WorkBookIsNullException("02001", "The content is null and please check and upload it again."),
-//    StakeholderSaveDuplicatedException("02001", "Duplicated Organization and Email record!"),
-//    StakeholderUploadIncomplete("02001", "Some of the content[row at %s] is invalid thus cannot be parsed. Please check and upload it again."),
-//    CategoryCodeNotFoundException("02001", "The following categories are not found: %s. Please add it first."),
-//    CategoryCodeDuplicatedException("02001", "The Category Code [%s] is duplicated. Please check and try again."),
-//    AssessmentInvalidException("02001", "The excel file of [%s] content is not complete. Please check and upload it again."),
-//    AssessmentCannotFindException("02001", "The [%s] can not find. Please contact the administrator."),
-//    AssessmentSheetCountException("02001", "The count of sheet is invalid. Please check and upload it again."),
-//    AssessmentRowCountException("02001", "The count of row is invalid. Please check and upload it again."),
-//    MailTemplateException(HttpCode.ERROR, "Email template not found, Please check ESG_EMAIL_DELIVER_CONFIG data in DB"),
-//    CategoryAndDictKeyDuplicatedException("02001", "Duplicated record found, please modify Category or DictKey, and try it again."),
-//    EmailTypeDuplicatedException("02001",  "Duplicated record found, please modify Type, and try it again."),
-//    AdminUserDuplicatedException("02001", "Duplicated record found, please modify DomainId or Type, and try it again."),
-//    DBDeleteException("02001", "Delete failed. Please try again.");
+    ResumePhotoIsNullException("10001", "文件为空，请重试"),
+    SaveResumePhotoException("10001", "图片上传失败，请重试"),
+    CompanySoleCodeDuplicateException("10001", "统一社会信用码/工商注册码已存在"),
+    CompanyInfoException("10001", "该公司信息有误，注册失败");
 
     private String code;
     private String message;
