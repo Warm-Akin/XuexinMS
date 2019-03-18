@@ -74,6 +74,9 @@ public class StudentResume {
     @Column(name = "SOFTWARESKILLS", length = 255)
     private String softwareSkills;
 
+    @Column(name = "ACTIVE", columnDefinition = "tinyint(1) DEFAULT default 1", nullable = false)
+    private Integer active;
+
     public String getId() {
         return id;
     }
@@ -232,5 +235,13 @@ public class StudentResume {
 
     public void setSoftwareSkills(String softwareSkills) {
         this.softwareSkills = softwareSkills;
+    }
+
+    public Integer getActive() {
+        return active;
+    }
+
+    public void setActive(Integer active) {
+        this.active = active;
     }
 }

@@ -7,6 +7,7 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
 import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
+import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.model.Student;
 import com.zhbit.xuexin.model.StudentResume;
@@ -14,16 +15,21 @@ import com.zhbit.xuexin.repository.StudentRepository;
 import com.zhbit.xuexin.repository.StudentResumeRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
+import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class StudentResumeService {
@@ -185,5 +191,33 @@ public class StudentResumeService {
             return bytes;
         }
         return null;
+    }
+
+    public PageResultVO<StudentResume> findAll(Integer page, Integer pageSize) {
+        // page's value start at '0'
+        PageRequest pageRequest = PageRequest.of(page - 1, pageSize, getSort());
+        Page<StudentResume> studentResumePage = (Page<StudentResume>) resumeRepository.findAll(new Specification<StudentResume>() {
+
+            @Override
+            public Predicate toPredicate(Root<StudentResume> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                Path active = root.get("active");
+                Predicate p = criteriaBuilder.equal(active, Constant.ACTIVE);
+                predicateList.add(p);
+
+                Predicate[] predicates = new Predicate[predicateList.size()];
+                predicateList.toArray(predicates);
+                criteriaQuery.where(predicates);
+                return criteriaBuilder.and(predicates);
+            }
+        }, pageRequest);
+        PageResultVO<StudentResume> pageResultVO = new PageResultVO<>(studentResumePage.getContent(), studentResumePage.getTotalElements());
+        return pageResultVO;
+    }
+
+    private Sort getSort() {
+        List<Sort.Order> orders = new ArrayList<>();
+        orders.add(new Sort.Order(Sort.Direction.ASC, "studentName"));
+        return new Sort(orders);
     }
 }

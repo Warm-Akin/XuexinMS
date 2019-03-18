@@ -2,6 +2,7 @@ package com.zhbit.xuexin.service;
 
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.ResultEnum;
+import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.model.Company;
 import com.zhbit.xuexin.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,11 @@ public class CompanyService {
         if (null != company && !StringUtils.isEmpty(company.getSoleCode())) {
             // check
             Company existCompany = companyRepository.findBySoleCode(company.getSoleCode());
-            if (null == existCompany)
+            if (null == existCompany) {
+                String password = SecurityUtil.GetMD5Code(company.getPassword());
+                company.setPassword(password);
                 companyRepository.save(company);
-            else
+            } else
                 throw new CustomException(ResultEnum.CompanySoleCodeDuplicateException.getMessage(), ResultEnum.CompanySoleCodeDuplicateException.getCode());
         } else
             throw new CustomException(ResultEnum.CompanyInfoException.getMessage(), ResultEnum.CompanyInfoException.getCode());

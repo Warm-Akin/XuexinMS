@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/xuexin/company")
+@RequestMapping(value = "/xuexin/anonymous")
 public class CompanyController {
 
     @Autowired
     CompanyService companyService;
 
-    @PostMapping("/register")
+    @PostMapping("/company/register")
     public ResponseEntity register(@RequestBody Company company) {
         companyService.register(company);
         return ResponseUtil.success(HttpStatus.OK);
