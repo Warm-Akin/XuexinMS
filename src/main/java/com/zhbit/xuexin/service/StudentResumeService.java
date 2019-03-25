@@ -15,6 +15,8 @@ import com.zhbit.xuexin.repository.StudentRepository;
 import com.zhbit.xuexin.repository.StudentResumeRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -96,16 +98,23 @@ public class StudentResumeService {
     }
 
 
-    public void createPdf (StudentResume studentResume) {
-        String templatePath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one.pdf";
+    public void createPdf (StudentResume studentResume) throws IOException {
+        Resource resource = new ClassPathResource("static\\pdfTemplates\\resume-one.pdf");
+
+//        String templatePath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one.pdf";
+        // todo change the target path
         String targetPath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one-1.pdf";
         PdfReader pdfReader = null;
         FileOutputStream outputStream = null;
         ByteArrayOutputStream bos;
         PdfStamper stamper = null;
         try {
+            // todo add
+            File resourceFile = resource.getFile();
+            InputStream pdfInputStream = new FileInputStream(resourceFile);
             outputStream = new FileOutputStream(targetPath);
-            pdfReader = new PdfReader(templatePath);
+//            pdfReader = new PdfReader(templatePath);
+            pdfReader = new PdfReader(pdfInputStream);
             bos = new ByteArrayOutputStream();
             stamper = new PdfStamper(pdfReader, bos);
             AcroFields fields = stamper.getAcroFields();
@@ -114,6 +123,7 @@ public class StudentResumeService {
             for (Field field : studentResume.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 try {
+                    // todo 做判空处理
                     if (!"photoPath".equals(field.getName())) {
                         fields.setField(field.getName(), field.get(studentResume).toString());
                     } else {

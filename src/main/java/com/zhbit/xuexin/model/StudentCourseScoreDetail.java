@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "t_courseinfo_students")
-//@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class StudentCourseScoreDetail implements Serializable {
 
     @Id
@@ -25,7 +25,7 @@ public class StudentCourseScoreDetail implements Serializable {
     private String courseName;
 
     @Column(name = "STU_ID", length = 32)
-    private String studentId;
+    private String stuId;
 
     @Column(name = "STUDENTNO", nullable = false, length = 16)
     private String studentNo;
@@ -85,7 +85,7 @@ public class StudentCourseScoreDetail implements Serializable {
     private String memo;
 
     @Temporal(TemporalType.DATE)
-    @Column(name ="CREATE_TIME", length = 7)
+    @Column(name ="CREATE_TIME")
     private Date createTime;
 
     @Column(name ="CREATOR", length = 32)
@@ -95,7 +95,7 @@ public class StudentCourseScoreDetail implements Serializable {
     private String parentOrgId;
 
     @Column(name = "TOTALHOURS")
-    private Integer totalHours;
+    private Double totalHours;
 
     // todo 2017.03.29添加
     @Column(name ="GRADE" ,length = 40)
@@ -149,12 +149,12 @@ public class StudentCourseScoreDetail implements Serializable {
         this.courseName = courseName;
     }
 
-    public String getStudentId() {
-        return studentId;
+    public String getStuId() {
+        return stuId;
     }
 
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
+    public void setStuId(String stuId) {
+        this.stuId = stuId;
     }
 
     public String getStudentNo() {
@@ -333,11 +333,11 @@ public class StudentCourseScoreDetail implements Serializable {
         this.parentOrgId = parentOrgId;
     }
 
-    public Integer getTotalHours() {
+    public Double getTotalHours() {
         return totalHours;
     }
 
-    public void setTotalHours(Integer totalHours) {
+    public void setTotalHours(Double totalHours) {
         this.totalHours = totalHours;
     }
 
