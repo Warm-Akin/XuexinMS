@@ -1,6 +1,7 @@
 package com.zhbit.xuexin.controller.admin;
 
 import com.zhbit.xuexin.common.util.ResponseUtil;
+import com.zhbit.xuexin.dto.StudentCourseScoreDetailDto;
 import com.zhbit.xuexin.model.StudentCourseScoreDetail;
 import com.zhbit.xuexin.service.StudentCourseScoreDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,16 @@ public class StudentCourseScoreDetailController {
     public ResponseEntity save(@RequestBody StudentCourseScoreDetail studentCourseScoreDetail) {
         studentCourseScoreDetailService.save(studentCourseScoreDetail);
         return ResponseUtil.success(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/findByConditions")
+    public ResponseEntity findDetailsByConditions(@RequestBody StudentCourseScoreDetailDto studentCourseScoreDetailDto) {
+        return ResponseUtil.success(studentCourseScoreDetailService.findByConditions(studentCourseScoreDetailDto));
+    }
+
+    @GetMapping(value = "/findAll")
+    public ResponseEntity findAllActive() {
+        return ResponseUtil.success(studentCourseScoreDetailService.findAllActive());
     }
 
 }

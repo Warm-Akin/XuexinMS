@@ -38,6 +38,7 @@ public class CourseService {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    // todo add active for search all
     public List<Course> findAll() {
         return courseRepository.findAll();
     }
@@ -119,10 +120,9 @@ public class CourseService {
                     Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherNo), "%" + courseDto.getTeacherNo().toUpperCase() + "%");
                     predicateList.add(p);
                 }
-                // todo upper
-                if (!StringUtils.isEmpty(courseDto.getCourseName())) {
+                if (!StringUtils.isEmpty(courseDto.getTeacherName())) {
                     Path teacherName = root.get("teacherName");
-                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherName), "%" + courseDto.getCourseName().toUpperCase() + "%");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(teacherName), "%" + courseDto.getTeacherName().toUpperCase() + "%");
                     predicateList.add(p);
                 }
                 if (!StringUtils.isEmpty(courseDto.getAcademicYear())) {

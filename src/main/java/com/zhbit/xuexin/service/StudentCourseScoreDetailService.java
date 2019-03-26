@@ -4,6 +4,7 @@ import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
+import com.zhbit.xuexin.dto.StudentCourseScoreDetailDto;
 import com.zhbit.xuexin.model.Course;
 import com.zhbit.xuexin.model.Organization;
 import com.zhbit.xuexin.model.Student;
@@ -16,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -91,5 +93,62 @@ public class StudentCourseScoreDetailService {
             studentCourseScoreDetailRepository.save(studentCourseScoreDetail);
         } else
             throw new CustomException(ResultEnum.EntityIsNullException.getMessage(), ResultEnum.EntityIsNullException.getCode());
+    }
+
+    public PageResultVO<StudentCourseScoreDetail> findByConditions(StudentCourseScoreDetailDto studentCourseScoreDetailDto) {
+        Pageable pageable = PageRequest.of(studentCourseScoreDetailDto.getCurrentPage() - 1, studentCourseScoreDetailDto.getPageSize(), getSort());
+        Page<StudentCourseScoreDetail> stuCourseScoreDetailPage = studentCourseScoreDetailRepository.findAll(new Specification<StudentCourseScoreDetail>() {
+
+            @Override
+            public Predicate toPredicate(Root<StudentCourseScoreDetail> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getStudentNo())) {
+                    Path studentNo = root.get("studentNo");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(studentNo), "%" + studentCourseScoreDetailDto.getStudentNo().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getStudentName())) {
+                    Path studentName = root.get("studentName");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(studentName), "%" + studentCourseScoreDetailDto.getStudentName().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getSelectedCourseNo())) {
+                    Path selectedCourseNo = root.get("selectedCourseNo");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(selectedCourseNo), "%" + studentCourseScoreDetailDto.getSelectedCourseNo().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getCourseName())) {
+                    Path courseName = root.get("courseName");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(courseName), "%" + studentCourseScoreDetailDto.getCourseName().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getAcademicYear())) {
+                    Path academicYear = root.get("academicYear");
+                    Predicate p = criteriaBuilder.equal(academicYear, studentCourseScoreDetailDto.getAcademicYear());
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(studentCourseScoreDetailDto.getTerm())) {
+                    Path term = root.get("term");
+                    Predicate p = criteriaBuilder.equal(term, studentCourseScoreDetailDto.getTerm());
+                    predicateList.add(p);
+                }
+                // active = 1
+                Path active = root.get("active");
+                Predicate p = criteriaBuilder.equal(active, Constant.ACTIVE);
+                predicateList.add(p);
+
+                Predicate[] predicates = new Predicate[predicateList.size()];
+                predicateList.toArray(predicates);
+                criteriaQuery.where(predicates);
+                return criteriaBuilder.and(predicates);
+            }
+        }, pageable);
+
+        PageResultVO<StudentCourseScoreDetail> pageResultVO = new PageResultVO<>(stuCourseScoreDetailPage.getContent(), stuCourseScoreDetailPage.getTotalElements());
+        return pageResultVO;
+    }
+
+    public List<StudentCourseScoreDetail> findAllActive() {
+        return studentCourseScoreDetailRepository.findByActive(Constant.ACTIVE);
     }
 }
