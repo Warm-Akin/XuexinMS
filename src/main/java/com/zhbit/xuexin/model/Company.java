@@ -67,6 +67,9 @@ public class Company {
     @Column(name = "PHOTOPATH",length = 255)
     private String photoPath;
 
+    @Column(name = "ACTIVE")
+    private Integer active;
+
     public String getId() {
         return id;
     }
@@ -209,5 +212,13 @@ public class Company {
 
     public void setPhotoPath(String photoPath) {
         this.photoPath = photoPath;
+    }
+
+    public Integer getActive() {
+        return active;
+    }
+
+    public void setActive(Integer active) {
+        this.active = active;
     }
 }
