@@ -20,7 +20,7 @@ public class CompanyController {
 
     @PostMapping("/company/register")
     public ResponseEntity register(@RequestBody Company company) {
-        companyService.register(company);
+        companyService.registerCompany(company);
         return ResponseUtil.success(HttpStatus.OK);
     }
 

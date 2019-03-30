@@ -16,7 +16,7 @@ public class Company {
     @Column(name = "ID", unique = true, nullable = false, length = 64)
     private String id;
 
-    @Column(name = "SOLE_CODE", length = 200)
+    @Column(name = "SOLE_CODE", length = 200, updatable = false)
     private String soleCode;
 
     @Column(name = "COMPANY_NAME", length = 64)

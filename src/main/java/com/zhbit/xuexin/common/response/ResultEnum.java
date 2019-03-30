@@ -18,7 +18,8 @@ public enum ResultEnum {
     ResumePhotoIsNullException("10001", "文件为空，请检查后重试"),
     SaveResumePhotoException("10001", "图片上传失败，请检查后重试"),
     CompanySoleCodeDuplicateException("10001", "统一社会信用码/工商注册码已存在"),
-    CompanyInfoException("10001", "该公司信息有误，注册失败");
+    CompanyInfoException("10001", "该公司信息有误，注册失败"),
+    CompanyDeleteFailedException("10001", "删除公司记录失败，请检查后重试");
 
     private String code;
     private String message;
