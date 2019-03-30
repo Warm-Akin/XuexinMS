@@ -9,6 +9,7 @@ import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
+import com.zhbit.xuexin.dto.ResumeDto;
 import com.zhbit.xuexin.model.Student;
 import com.zhbit.xuexin.model.StudentResume;
 import com.zhbit.xuexin.repository.StudentRepository;
@@ -19,6 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -229,5 +231,59 @@ public class StudentResumeService {
         List<Sort.Order> orders = new ArrayList<>();
         orders.add(new Sort.Order(Sort.Direction.ASC, "studentName"));
         return new Sort(orders);
+    }
+
+    @Transactional
+    public void deleteRecords(List<StudentResume> resumeList) {
+        if (resumeList.size() > 0) {
+            resumeList.forEach(resume -> {
+                resume.setActive(Constant.INACTIVE);
+            });
+            resumeRepository.saveAll(resumeList);
+        } else
+            throw new CustomException(ResultEnum.ResumeDeleteFailedException.getMessage(), ResultEnum.ResumeDeleteFailedException.getCode());
+    }
+
+    public PageResultVO<StudentResume> findByConditions(ResumeDto resumeDto) {
+        Pageable pageable = PageRequest.of(resumeDto.getCurrentPage() - 1, resumeDto.getPageSize(), getSort());
+        Page<StudentResume> resultPage = resumeRepository.findAll(new Specification<StudentResume>() {
+
+            @Override
+            public Predicate toPredicate(Root<StudentResume> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                if (!StringUtils.isEmpty(resumeDto.getStudentName())) {
+                    Path studentName = root.get("studentName");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(studentName), "%" + resumeDto.getStudentName().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(resumeDto.getJobWant())) {
+                    Path jobWant = root.get("jobWant");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(jobWant), "%" + resumeDto.getJobWant().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(resumeDto.getMajor())) {
+                    Path major = root.get("major");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(major), "%" + resumeDto.getMajor().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                if (!StringUtils.isEmpty(resumeDto.getSchoolName())) {
+                    Path schoolName = root.get("schoolName");
+                    Predicate p = criteriaBuilder.like(criteriaBuilder.upper(schoolName), "%" + resumeDto.getSchoolName().toUpperCase() + "%");
+                    predicateList.add(p);
+                }
+                // active = 1
+                Path active = root.get("active");
+                Predicate p = criteriaBuilder.equal(active, Constant.ACTIVE);
+                predicateList.add(p);
+
+                Predicate[] predicates = new Predicate[predicateList.size()];
+                predicateList.toArray(predicates);
+                criteriaQuery.where(predicates);
+                return criteriaBuilder.and(predicates);
+            }
+        }, pageable);
+
+        PageResultVO<StudentResume> pageResultVO = new PageResultVO<>(resultPage.getContent(), resultPage.getTotalElements());
+        return pageResultVO;
     }
 }
