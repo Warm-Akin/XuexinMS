@@ -10,6 +10,8 @@ import com.zhbit.xuexin.repository.StudentRepository;
 import com.zhbit.xuexin.repository.TeacherRepository;
 import com.zhbit.xuexin.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -19,43 +21,55 @@ public class LoginService {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    StudentRepository studentRepository;
+//    @Autowired
+//    StudentRepository studentRepository;
+//
+//    @Autowired
+//    TeacherRepository teacherRepository;
+//
+//    public User checkLogin(User user) {
+//        if (user != null && !StringUtils.isEmpty(user.getEmployName()) && !StringUtils.isEmpty(user.getPassword())) {
+//            String userName = user.getEmployName();
+//            String password = SecurityUtil.GetMD5Code(user.getPassword());
+//            String userType = "";
+//            // userType = 2
+//            User currentUser = userRepository.findByEmployNameAndPassword(userName, password);
+//            if (null != currentUser) {
+//                userType = "2";
+//            } else {
+//                currentUser = new User();
+//                currentUser.setEmployNo(userName);
+//                // userType = 1
+//                Student currentStudent = studentRepository.findByStudentNoAndPassword(userName, password);
+//                if (null != currentStudent) {
+//                    userType = "1";
+//                } else {
+//                    // userType = 0
+//                    Teacher currentTeacher = teacherRepository.findByTeacherNoAndPassword(userName, password);
+//                    if (null != currentTeacher) {
+//                        userType = "0";
+//                    }
+//                }
+//            }
+//            if (!StringUtils.isEmpty(userType)) {
+//                // 验证成功，获取权限信息
+//                // todo
+//                currentUser.setUserType(userType);
+//            } else // 验证失败
+//                throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
+//            return currentUser;
+//        }
+//        return null;
+//    }
 
-    @Autowired
-    TeacherRepository teacherRepository;
-
-    public User checkLogin(User user) {
-        if (user != null && !StringUtils.isEmpty(user.getEmployName()) && !StringUtils.isEmpty(user.getPassword())) {
-            String userName = user.getEmployName();
-            String password = SecurityUtil.GetMD5Code(user.getPassword());
-            String userType = "";
-            // userType = 2
-            User currentUser = userRepository.findByEmployNameAndPassword(userName, password);
+    public User validateUserLogin(String userName, String password) throws UsernameNotFoundException {
+        if (!StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
+            User currentUser = userRepository.findByEmployNameAndPassword(userName, SecurityUtil.GetMD5Code(password));
             if (null != currentUser) {
-                userType = "2";
-            } else {
-                currentUser = new User();
-                currentUser.setEmployNo(userName);
-                // userType = 1
-                Student currentStudent = studentRepository.findByStudentNoAndPassword(userName, password);
-                if (null != currentStudent) {
-                    userType = "1";
-                } else {
-                    // userType = 0
-                    Teacher currentTeacher = teacherRepository.findByTeacherNoAndPassword(userName, password);
-                    if (null != currentTeacher) {
-                        userType = "0";
-                    }
-                }
-            }
-            if (!StringUtils.isEmpty(userType)) {
-                // 验证成功，获取权限信息
-                // todo
-                currentUser.setUserType(userType);
-            } else // 验证失败
+                // todo load user's authority
+                return currentUser;
+            } else
                 throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
-            return currentUser;
         }
         return null;
     }

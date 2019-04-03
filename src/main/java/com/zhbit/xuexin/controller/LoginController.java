@@ -8,16 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
-@RequestMapping("/xuexin/user")
+//@RestController
+//@RequestMapping("/xuexin/user")
 public class LoginController {
 
-    @Autowired
-    LoginService loginService;
-
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody User user) {
-        User loginUser = loginService.checkLogin(user);
-        return ResponseUtil.success(loginUser);
-    }
+//    @Autowired
+//    LoginService loginService;
+//
+//    @PostMapping("/login")
+//    public ResponseEntity login(@RequestBody User user) {
+//        User loginUser = loginService.checkLogin(user);
+//        return ResponseUtil.success(loginUser);
+//    }
 }
