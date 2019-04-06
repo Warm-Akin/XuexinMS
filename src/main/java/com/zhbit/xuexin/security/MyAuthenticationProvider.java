@@ -7,6 +7,7 @@ import com.zhbit.xuexin.security.common.UserContext;
 import com.zhbit.xuexin.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -33,7 +34,8 @@ public class MyAuthenticationProvider implements AuthenticationProvider {
         // todo check user login info
         User user = loginService.validateUserLogin(userName, password);
         if (null == user)
-            throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
+            throw new BadCredentialsException("用户名或密码失败");
+//            throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
         UserContext userContext = new UserContext();
         userContext.setUser(user);
         userContext.setUsername(userName);

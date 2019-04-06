@@ -8,9 +8,9 @@ public class JwtToken {
 
     private String rawToken;
 
-    private Map<String, Object> claims;
+    private Claims claims;
 
-    public JwtToken(String rawToken, Map<String, Object> claims) {
+    public JwtToken(String rawToken, Claims claims) {
         this.rawToken = rawToken;
         this.claims = claims;
     }
@@ -19,7 +19,7 @@ public class JwtToken {
         return rawToken;
     }
 
-    public Map<String, Object> getClaims() {
+    public Claims getClaims() {
         return claims;
     }
 }

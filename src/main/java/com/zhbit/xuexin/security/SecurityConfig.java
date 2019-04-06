@@ -1,6 +1,7 @@
 package com.zhbit.xuexin.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zhbit.xuexin.security.common.AuthenticationEntryPoint;
 import com.zhbit.xuexin.security.filter.LoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     MyAuthenticationProvider authenticationProvider;
 
+    @Autowired
+    AuthenticationEntryPoint authenticationEntryPoint;
+
     private static final String loginPath = "/xuexin/user/login";
 
 
@@ -49,6 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
@@ -62,7 +67,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/xuexin/company/**").hasRole("COMPANY")
                 .and()
                 .addFilterBefore(buildLoginFilter(), UsernamePasswordAuthenticationFilter.class);
-//                .anyRequest().authenticated()
 //                .and().headers().cacheControl();
 //        super.configure(http);
     }

@@ -63,14 +63,15 @@ public class LoginService {
 //    }
 
     public User validateUserLogin(String userName, String password) throws UsernameNotFoundException {
+        User currentUser = null;
         if (!StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
-            User currentUser = userRepository.findByEmployNameAndPassword(userName, SecurityUtil.GetMD5Code(password));
-            if (null != currentUser) {
-                // todo load user's authority
-                return currentUser;
-            } else
-                throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
+            currentUser = userRepository.findByEmployNameAndPassword(userName, SecurityUtil.GetMD5Code(password));
+//            if (null != currentUser) {
+//                // todo load user's authority
+//                return currentUser;
+//            } else
+//                throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
         }
-        return null;
+        return currentUser;
     }
 }

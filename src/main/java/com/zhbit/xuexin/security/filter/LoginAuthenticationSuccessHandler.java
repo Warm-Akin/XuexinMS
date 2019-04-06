@@ -43,10 +43,10 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
             Map<String, JwtToken> tokenMap = new HashMap<>();
             tokenMap.put("accessToken", accessToken);
             Result successResponse = new Result("SUCCESS", tokenMap);
-            ResponseUtil.writeSuccessReponse(httpServletResponse, successResponse);
+            ResponseUtil.writeSuccessResponse(httpServletResponse, successResponse);
         } catch (Exception e) {
-            Result errorResponse = new Result("ERROR", e.getMessage(), HttpStatus.UNAUTHORIZED);
-            ResponseUtil.writeErrorReponse(httpServletResponse, errorResponse, HttpStatus.UNAUTHORIZED);
+            Result errorResponse = new Result("ERROR", e.getMessage(), HttpStatus.OK);
+            ResponseUtil.writeErrorResponse(httpServletResponse, errorResponse, HttpStatus.OK);
         }
     }
 }

@@ -30,23 +30,25 @@ public class JwtTokenUtil {
         if (null == userContext.getAuthorities() || userContext.getAuthorities().isEmpty())
             throw new IllegalArgumentException("用户没有任何权限");
 
-//        Claims claims = Jwts.claims().setSubject(userContext.getUsername());
-//        claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
+
+        Claims claims = Jwts.claims().setSubject(userContext.getUsername());
+        claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
 //        claims.put("userInfo", userContext.getUser());
 
-        Map<String, Object> claims = new HashMap<>(16);
+//        Map<String, Object> claims = new HashMap<>();
+//        claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
+//        claims.put("userInfo", userContext.getUser());
         claims.put("sub", userContext.getUsername());
         claims.put("created", new Date());
 
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("alg", "HS512");
-        map.put("typ", "JWT");
+        Map<String, Object> headerMap = new HashMap<>();
+        headerMap.put("alg", "HS512");
+        headerMap.put("typ", "JWT");
 
         LocalDateTime nowTime = LocalDateTime.now();
 
         String token = Jwts.builder().setClaims(claims)
-                .setHeader(map)
+                .setHeader(headerMap)
                 .setIssuer("xuexin.service")
                 .setIssuedAt(Date.from(nowTime.atZone(ZoneId.systemDefault()).toInstant()))
                 .setExpiration(Date.from(nowTime.plusMinutes(jwtConfig.getTokenExpireTime()).atZone(ZoneId.systemDefault()).toInstant()))

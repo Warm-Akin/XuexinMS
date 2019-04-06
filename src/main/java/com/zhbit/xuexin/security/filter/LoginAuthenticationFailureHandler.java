@@ -17,8 +17,11 @@ public class LoginAuthenticationFailureHandler implements AuthenticationFailureH
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
-        String errorMsg = "Login Failed: " + e.getMessage();
+        String errorMsg = "登录失败: " + e.getMessage();
+//        Result errorResponse = new Result("ERROR", errorMsg);
+//        ErrorResponse errorResponse = ErrorResponse.of("ERROR", errorMsg, HttpStatus.UNAUTHORIZED);
+
         Result errorResponse = new Result("ERROR", errorMsg, HttpStatus.UNAUTHORIZED);
-        ResponseUtil.writeErrorReponse(httpServletResponse, errorResponse, HttpStatus.BAD_REQUEST);
+        ResponseUtil.writeErrorResponse(httpServletResponse, errorResponse, HttpStatus.OK);
     }
 }
