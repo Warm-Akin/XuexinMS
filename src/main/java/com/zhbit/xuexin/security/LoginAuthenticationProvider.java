@@ -1,7 +1,5 @@
 package com.zhbit.xuexin.security;
 
-import com.zhbit.xuexin.common.exception.CustomException;
-import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.security.common.UserContext;
 import com.zhbit.xuexin.service.LoginService;
@@ -19,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class MyAuthenticationProvider implements AuthenticationProvider {
+public class LoginAuthenticationProvider implements AuthenticationProvider {
 
 //    @Autowired
 //    UserDetailsService userDetailsService;

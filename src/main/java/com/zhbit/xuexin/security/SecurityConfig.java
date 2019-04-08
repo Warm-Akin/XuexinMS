@@ -2,6 +2,9 @@ package com.zhbit.xuexin.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhbit.xuexin.security.common.AuthenticationEntryPoint;
+import com.zhbit.xuexin.security.common.PathConfig;
+import com.zhbit.xuexin.security.common.PathRequestMatcher;
+import com.zhbit.xuexin.security.filter.JwtAuthenticationProcessFilter;
 import com.zhbit.xuexin.security.filter.LoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,12 +38,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    MyAuthenticationProvider authenticationProvider;
+    LoginAuthenticationProvider loginAuthenticationProvider;
+
+    @Autowired
+    JwtAuthenticationProvider jwtAuthenticationProvider;
 
     @Autowired
     AuthenticationEntryPoint authenticationEntryPoint;
 
-    private static final String loginPath = "/xuexin/user/login";
+    @Autowired
+    PathConfig pathConfig;
+
+//    private static final String loginPath = "/xuexin/login";
 
 
 //    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
@@ -59,27 +68,38 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // 把不需要认证的接口暴露出去
-                .antMatchers(loginPath).permitAll()
-                .antMatchers("/xuexin/anonymous/**").permitAll()
+                .antMatchers(pathConfig.getLoginPath()).permitAll()
+                .antMatchers(pathConfig.getSkipPathPattern()).permitAll()
                 .antMatchers("/static/**").permitAll()
-                .antMatchers("/xuexin/admin/**").hasRole("ADMIN")
-                .antMatchers("/xuexin/student/**").hasRole("STUDENT")
-                .antMatchers("/xuexin/company/**").hasRole("COMPANY")
+                .antMatchers(pathConfig.getAuthenticatedPathAdmin()).hasRole("ADMIN")
+                .antMatchers(pathConfig.getAuthenticatedPathStudent()).hasRole("STUDENT")
+                .antMatchers(pathConfig.getAuthenticatedPathTeacher()).hasRole("TEACHER")
+                .antMatchers(pathConfig.getAuthenticatedPathCompany()).hasRole("COMPANY")
+                .antMatchers(pathConfig.getSecurityPathPattern()).authenticated()
                 .and()
-                .addFilterBefore(buildLoginFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(buildLoginFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(buildJwtAuthenticationProcessFilter(), UsernamePasswordAuthenticationFilter.class);;
 //                .and().headers().cacheControl();
 //        super.configure(http);
     }
 
     private LoginFilter buildLoginFilter() {
-        LoginFilter loginFilter = new LoginFilter(loginPath, successHandler, failureHandler, objectMapper);
+        LoginFilter loginFilter = new LoginFilter(pathConfig.getLoginPath(), successHandler, failureHandler, objectMapper);
         loginFilter.setAuthenticationManager(this.authenticationManager);
         return loginFilter;
     }
 
+    private JwtAuthenticationProcessFilter buildJwtAuthenticationProcessFilter() {
+        PathRequestMatcher matcher = new PathRequestMatcher(pathConfig.getSkipPathPattern(), pathConfig.getSecurityPathPattern());
+        JwtAuthenticationProcessFilter filter = new JwtAuthenticationProcessFilter(failureHandler, matcher);
+        filter.setAuthenticationManager(this.authenticationManager);
+        return filter;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider);
+        auth.authenticationProvider(loginAuthenticationProvider);
+        auth.authenticationProvider(jwtAuthenticationProvider);
     }
 
     @Override

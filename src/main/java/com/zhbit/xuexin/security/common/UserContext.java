@@ -1,6 +1,7 @@
 package com.zhbit.xuexin.security.common;
 
 import com.zhbit.xuexin.model.User;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
@@ -13,6 +14,15 @@ public class UserContext{
     private User user;
 
     private List<GrantedAuthority> authorities;
+
+    public UserContext() {
+    }
+
+    public UserContext(String username, User user, List<GrantedAuthority> authorities) {
+        this.username = username;
+        this.user = user;
+        this.authorities = authorities;
+    }
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

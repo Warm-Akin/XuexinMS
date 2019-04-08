@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/xuexin/admin/company")
+@RequestMapping(value = "/xuexin/security/admin/company")
 public class CompanyMaintenanceController {
 
     @Autowired

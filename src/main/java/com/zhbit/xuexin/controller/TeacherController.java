@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping(value = "/xuexin/admin/teacher")
+@RequestMapping(value = "/xuexin/security/admin/teacher")
 public class TeacherController {
 
     @Autowired

@@ -35,13 +35,19 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
         try {
             UserContext userContext = (UserContext) authentication.getPrincipal();
             JwtToken accessToken = jwtTokenUtil.createAccessToken(userContext);
+            JwtToken refreshToken = jwtTokenUtil.createRefreshToken(userContext);
             // todo add refresh token
             Cookie tokenCookie = new Cookie(AuthenticationConstant.AUTHENTICATION_COOKIE, accessToken.getRawToken());
             tokenCookie.setMaxAge(jwtConfig.getTokenCookieMaxAge() * 60);
+            Cookie refreshTokenCookie = new Cookie(AuthenticationConstant.REFRESH_AUTHENTICATION_COOKIE, refreshToken.getRawToken());
+            refreshTokenCookie.setMaxAge(jwtConfig.getTokenRefreshCookieMaxAge() * 60);
             // todo add refresh cookie
             httpServletResponse.addCookie(tokenCookie);
+            httpServletResponse.addCookie(refreshTokenCookie);
             Map<String, JwtToken> tokenMap = new HashMap<>();
             tokenMap.put("accessToken", accessToken);
+            tokenMap.put("refreshToken", refreshToken);
+
             Result successResponse = new Result("SUCCESS", tokenMap);
             ResponseUtil.writeSuccessResponse(httpServletResponse, successResponse);
         } catch (Exception e) {

@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(value = "/xuexin/student/resume")
+@RequestMapping(value = "/xuexin/security/student/resume")
 public class StudentResumeController {
 
     @Autowired

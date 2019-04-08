@@ -8,7 +8,7 @@ public class AuthenticationConstant {
 
     public final static String JWT_REFRESH_TOKEN_HEADER = "Authentication-RefreshToken";
 
-    public final static String LOGIN_FAILED = "Login Failed: ";
+    public final static String LOGIN_FAILED = "登录失败: ";
 
     public final static String AUTHENTICATION_FAILED = "Authentication Failed: ";
 

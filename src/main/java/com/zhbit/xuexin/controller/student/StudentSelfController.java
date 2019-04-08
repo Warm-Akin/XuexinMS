@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/xuexin/student")
+@RequestMapping(value = "/xuexin/security/student")
 public class StudentSelfController {
 
     @Autowired

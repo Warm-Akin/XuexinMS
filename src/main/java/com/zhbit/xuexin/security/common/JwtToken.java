@@ -10,9 +10,17 @@ public class JwtToken {
 
     private Claims claims;
 
+    public JwtToken() {
+
+    }
+
     public JwtToken(String rawToken, Claims claims) {
         this.rawToken = rawToken;
         this.claims = claims;
+    }
+
+    public JwtToken(String rawToken) {
+        this.rawToken = rawToken;
     }
 
     public String getRawToken() {
