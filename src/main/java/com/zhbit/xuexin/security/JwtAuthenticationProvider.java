@@ -44,8 +44,6 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         User userInfo = null;
         try {
             String userId = objectMapper.writeValueAsString(claims.get("userId"));
-//            String info = objectMapper.writeValueAsString(claims.get("userInfo"));
-//            userInfo = objectMapper.readValue(info, DomainUser.class);
             userInfo = userRepository.findById(userId.replaceAll("\"", "")).orElse(null);
         } catch (IOException e) {
 //            logger.error("Error processing userInfos parsed from jwt token");
@@ -57,9 +55,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
                 .collect(Collectors.toList());
 
 //        sessionManager(scopes.get(0), username);
-
-        return new JwtAuthenticationToken(new UserContext(username, userInfo, authorities), authorities);
-//        return null;
+        JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(new UserContext(username, userInfo, authorities), authorities);
+        authenticationToken.setAccessToken(accessToken);
+        return authenticationToken;
     }
 
     @Override

@@ -61,12 +61,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
+                .cors()
+                .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                .antMatchers(HttpMethod.GET, "/**").permitAll()
+//                .antMatchers(HttpMethod.POST, "/**").permitAll()
+//                .antMatchers(HttpMethod.DELETE, "/**").permitAll()
+//                .antMatchers(HttpMethod.HEAD, "/**").permitAll()
+//                .antMatchers(HttpMethod.PUT, "/**").permitAll()
+//                .antMatchers(HttpMethod.PATCH, "/**").permitAll()
                 // 把不需要认证的接口暴露出去
                 .antMatchers(pathConfig.getLoginPath()).permitAll()
                 .antMatchers(pathConfig.getSkipPathPattern()).permitAll()
@@ -78,7 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(pathConfig.getSecurityPathPattern()).authenticated()
                 .and()
                 .addFilterBefore(buildLoginFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(buildJwtAuthenticationProcessFilter(), UsernamePasswordAuthenticationFilter.class);;
+                .addFilterBefore(buildJwtAuthenticationProcessFilter(), UsernamePasswordAuthenticationFilter.class);
 //                .and().headers().cacheControl();
 //        super.configure(http);
     }

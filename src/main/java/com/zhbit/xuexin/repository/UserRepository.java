@@ -7,5 +7,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface  UserRepository extends IBaseRespository<User, String> {
 
-    User findByEmployNameAndPassword(String userName, String password);
+    User findByEmployNoAndPassword(String userName, String password);
+
+    User findByEmployNo(String username);
 }

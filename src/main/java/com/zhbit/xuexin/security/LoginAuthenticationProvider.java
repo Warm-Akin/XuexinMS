@@ -3,6 +3,7 @@ package com.zhbit.xuexin.security;
 import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.security.common.UserContext;
 import com.zhbit.xuexin.service.LoginService;
+import com.zhbit.xuexin.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,6 +25,9 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
     LoginService loginService;
+
+    @Autowired
+    UserService userService;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -47,15 +51,11 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
         return aClass.equals(UsernamePasswordAuthenticationToken.class);
     }
 
+    // todo get the real authentication role
     private List<GrantedAuthority> getUserAuthorities(String username) {
-        String role = "TESTER";
-        if ("test1".equals(username))
-            role = "ADMIN";
-        // get user roles by username
-//        ESGAdmin esgAdmin = esgAdminService.checkLoginInfo(username);
+        String role = userService.getUserTypeByUserName(username);
         List<GrantedAuthority> auths = new ArrayList<>();
         auths.add(new SimpleGrantedAuthority(role));
-//        auths.add(new SimpleGrantedAuthority(esgAdmin.getType()));
         return auths;
     }
 }
