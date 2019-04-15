@@ -33,15 +33,12 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String userName = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
-        // todo check user login info
         User user = loginService.validateUserLogin(userName, password);
         if (null == user)
             throw new BadCredentialsException("用户名或密码失败");
-//            throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
         UserContext userContext = new UserContext();
         userContext.setUser(user);
         userContext.setUsername(userName);
-        // todo get user's authority
         userContext.setAuthorities(getUserAuthorities(userName));
         return new UsernamePasswordAuthenticationToken(userContext, password, userContext.getAuthorities());
     }

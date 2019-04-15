@@ -66,11 +66,6 @@ public class LoginService {
         User currentUser = null;
         if (!StringUtils.isEmpty(userName) && !StringUtils.isEmpty(password)) {
             currentUser = userRepository.findByEmployNoAndPassword(userName, SecurityUtil.GetMD5Code(password));
-//            if (null != currentUser) {
-//                // todo load user's authority
-//                return currentUser;
-//            } else
-//                throw new CustomException(ResultEnum.AccountInvalidException.getMessage(), ResultEnum.AccountInvalidException.getCode());
         }
         return currentUser;
     }

@@ -22,19 +22,19 @@ public class UserService {
         String userType = "";
         switch (user.getUserType()) {
             case "0":
-                userType = "STUDENT";
+                userType = "ROLE_STUDENT";
                 break;
             case "1":
-                userType = "TEACHER";
+                userType = "ROLE_TEACHER";
                 break;
             case "2":
-                userType = "ADMIN";
+                userType = "ROLE_ADMIN";
                 break;
             case "3":
-                userType = "COMPANY";
+                userType = "ROLE_COMPANY";
                 break;
             default:
-                userType = "NONE";
+                userType = "ROLE_NONE";
         }
         return userType;
     }

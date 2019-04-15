@@ -2,6 +2,7 @@ package com.zhbit.xuexin.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhbit.xuexin.security.common.AuthenticationEntryPoint;
+import com.zhbit.xuexin.security.common.CorsFilter;
 import com.zhbit.xuexin.security.common.PathConfig;
 import com.zhbit.xuexin.security.common.PathRequestMatcher;
 import com.zhbit.xuexin.security.filter.JwtAuthenticationProcessFilter;
@@ -9,7 +10,6 @@ import com.zhbit.xuexin.security.filter.LoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -65,16 +65,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
-//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-//                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//                .antMatchers(HttpMethod.GET, "/**").permitAll()
-//                .antMatchers(HttpMethod.POST, "/**").permitAll()
-//                .antMatchers(HttpMethod.DELETE, "/**").permitAll()
-//                .antMatchers(HttpMethod.HEAD, "/**").permitAll()
-//                .antMatchers(HttpMethod.PUT, "/**").permitAll()
-//                .antMatchers(HttpMethod.PATCH, "/**").permitAll()
                 // 把不需要认证的接口暴露出去
                 .antMatchers(pathConfig.getLoginPath()).permitAll()
                 .antMatchers(pathConfig.getSkipPathPattern()).permitAll()
@@ -85,10 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(pathConfig.getAuthenticatedPathCompany()).hasRole("COMPANY")
                 .antMatchers(pathConfig.getSecurityPathPattern()).authenticated()
                 .and()
+                .addFilterBefore(new CorsFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(buildLoginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(buildJwtAuthenticationProcessFilter(), UsernamePasswordAuthenticationFilter.class);
-//                .and().headers().cacheControl();
-//        super.configure(http);
     }
 
     private LoginFilter buildLoginFilter() {

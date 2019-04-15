@@ -7,17 +7,9 @@ import java.util.Collection;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
-//    private JwtToken accessToken;
-
     private AccessToken accessToken;
 
     private UserContext userContext;
-
-//    public JwtAuthenticationToken(JwtToken accessToken) {
-//        super(null);
-//        this.accessToken = accessToken;
-//        this.setAuthenticated(false);
-//    }
 
     public JwtAuthenticationToken(AccessToken accessToken) {
         super(null);
