@@ -6,6 +6,7 @@ import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.dto.CompanyDto;
+import com.zhbit.xuexin.dto.OrderDetailDto;
 import com.zhbit.xuexin.model.Company;
 import com.zhbit.xuexin.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -147,5 +149,19 @@ public class CompanyService {
             companyRepository.saveAll(companyList);
         } else
             throw new CustomException(ResultEnum.CompanyDeleteFailedException.getMessage(), ResultEnum.CompanyDeleteFailedException.getCode());
+    }
+
+    @Transactional
+    public void updateAfterPayment(OrderDetailDto orderDetailDto) {
+        if (!StringUtils.isEmpty(orderDetailDto.getCompanySoleCode())) {
+            Company currentCompany = companyRepository.findBySoleCode(orderDetailDto.getCompanySoleCode());
+            if (null != currentCompany) {
+                String limitation = orderDetailDto.getType().equals("1") ? "+9999" : orderDetailDto.getTotalFee();
+                currentCompany.setPdfLimit(limitation);
+                currentCompany.setUpdateBy(orderDetailDto.getCompanySoleCode());
+                currentCompany.setUpdateDate(new Date().toLocaleString());
+                companyRepository.save(currentCompany);
+            }
+        }
     }
 }

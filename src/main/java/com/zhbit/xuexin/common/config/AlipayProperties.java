@@ -3,11 +3,6 @@ package com.zhbit.xuexin.common.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-/**
- * 支付宝支付配置文件
- * @author Administrator
- *
- */
 @Component
 @ConfigurationProperties(prefix="alipayconfig")
 public class AlipayProperties {
@@ -18,7 +13,7 @@ public class AlipayProperties {
 	
 	private String notify_url; // 服务器异步通知页面路径 需http://或者https://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
 	
-	private String return_url; // 页面跳转同步通知页面路径 需http://或者https://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问 商户可以自定义同步跳转地址
+	private String return_url; // 页面跳转同步通知页面路径
 	
 	private String url; // 请求网关地址
 	
@@ -102,14 +97,4 @@ public class AlipayProperties {
 		this.signtype = signtype;
 	}
 
-	@Override
-	public String toString() {
-		return "AlipayProperties [appid=" + appid + ", rsa_private_key=" + rsa_private_key + ", notify_url="
-				+ notify_url + ", return_url=" + return_url + ", url=" + url + ", charset=" + charset + ", format="
-				+ format + ", alipay_public_key=" + alipay_public_key + ", signtype=" + signtype + "]";
-	}
-	
-	
-	
-	
 }
