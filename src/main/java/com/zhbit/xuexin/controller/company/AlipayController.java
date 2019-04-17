@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AlipayController {
 
     @Autowired
-    AlipayProperties alipayProperties;
-
-    @Autowired
     AlipayService  alipayService;
 
     @PostMapping("/payment")

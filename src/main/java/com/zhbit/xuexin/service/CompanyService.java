@@ -156,12 +156,22 @@ public class CompanyService {
         if (!StringUtils.isEmpty(orderDetailDto.getCompanySoleCode())) {
             Company currentCompany = companyRepository.findBySoleCode(orderDetailDto.getCompanySoleCode());
             if (null != currentCompany) {
-                String limitation = orderDetailDto.getType().equals("1") ? "+9999" : orderDetailDto.getTotalFee();
+                // todo add a table for payment
+                String remainLimitation = currentCompany.getPdfLimit();
+                String limitation = orderDetailDto.getType().equals("1") ? "+9999" : (!remainLimitation.equals("-1") ? String.valueOf(Integer.parseInt(remainLimitation) + Integer.parseInt(orderDetailDto.getTotalFee())) : orderDetailDto.getTotalFee());
                 currentCompany.setPdfLimit(limitation);
                 currentCompany.setUpdateBy(orderDetailDto.getCompanySoleCode());
                 currentCompany.setUpdateDate(new Date().toLocaleString());
                 companyRepository.save(currentCompany);
             }
         }
+    }
+
+    public Company findBySoleCode(String soleCode) {
+        if (!StringUtils.isEmpty(soleCode)) {
+            Company company = companyRepository.findBySoleCode(soleCode);
+            return company;
+        } else
+            throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
     }
 }

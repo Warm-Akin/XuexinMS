@@ -21,4 +21,9 @@ public class CompanySelfController {
         companyService.updateAfterPayment(orderDetailDto);
         return ResponseUtil.success(HttpStatus.OK);
     }
+
+    @GetMapping("/findBySoleCode/{soleCode}")
+    public ResponseEntity findBySoleCode(@PathVariable("soleCode") String soleCode) {
+        return ResponseUtil.success(companyService.findBySoleCode(soleCode));
+    }
 }
