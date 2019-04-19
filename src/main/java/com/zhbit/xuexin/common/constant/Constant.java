@@ -6,6 +6,14 @@ public class Constant {
     public static final Integer INACTIVE = 0;
     public static final String GRADE_PREFIX = "20";
 
+    // user type
+    public static final String USER_TYPE_STUDENT = "1";
+    public static final String USER_TYPE_ADMIN = "2";
+    public static final String USER_TYPE_COMPANY = "3";
+
+    public static final String USER_ENABLE = "0";
+    public static final String USER_DISABLE = "1";
+
     // For student upload
     public static final Integer INDEX_STUDENT_NO = 0;
     public static final Integer INDEX_STUDENT_NAME = 1;

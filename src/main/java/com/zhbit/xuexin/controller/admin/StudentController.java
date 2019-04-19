@@ -1,4 +1,4 @@
-package com.zhbit.xuexin.controller;
+package com.zhbit.xuexin.controller.admin;
 
 import com.zhbit.xuexin.common.util.ResponseUtil;
 import com.zhbit.xuexin.dto.StudentDto;

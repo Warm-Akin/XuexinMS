@@ -21,7 +21,11 @@ public enum ResultEnum {
     CompanyInfoException("10001", "该公司信息有误，注册失败"),
     CompanyDeleteFailedException("10001", "删除公司记录失败，请检查后重试"),
     ResumeDeleteFailedException("10001", "删除简历记录失败，请检查后重试"),
-    ParamsIsNullException("10001", "请求参数为空，请检查后重试");
+    ParamsIsNullException("10001", "请求参数为空，请检查后重试"),
+    UpdateCompanyInfoException("10001","数据更新失败，请检查后重试"),
+    SoleCodeInfoException("10001","数据更新失败，该公司用户信息不存在，请联系管理员"),
+    OriginalPasswordErrorException("10001","密码更新失败，原密码错误，请检查后重试"),
+    StudentNoInfoException("10001","数据更新失败，该学生用户信息不存在，请联系管理员");
 
     private String code;
     private String message;

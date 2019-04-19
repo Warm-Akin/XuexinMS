@@ -6,12 +6,21 @@ import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.util.DateUtil;
 import com.zhbit.xuexin.common.util.ExcelUtil;
+import com.zhbit.xuexin.common.util.SecurityUtil;
+import com.zhbit.xuexin.dto.PasswordDto;
 import com.zhbit.xuexin.dto.StudentDto;
+import com.zhbit.xuexin.model.Organization;
 import com.zhbit.xuexin.model.Student;
+import com.zhbit.xuexin.model.User;
+import com.zhbit.xuexin.repository.OrganizationRepository;
 import com.zhbit.xuexin.repository.StudentRepository;
+import com.zhbit.xuexin.repository.UserRepository;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +42,19 @@ import java.util.*;
 @Service
 public class StudentService {
 
+    private static Logger logger = LoggerFactory.getLogger(StudentService.class);
+
     @Autowired
     StudentRepository studentRepository;
+
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    OrganizationRepository organizationRepository;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -131,6 +151,10 @@ public class StudentService {
         return pageResultVO;
     }
 
+    // todo set createdTime and creator automatically
+
+
+
     @Transactional
     public void handleSave(Student student) {
         if (null != student) {
@@ -139,16 +163,25 @@ public class StudentService {
                 String stuNo = student.getStudentNo();
                 Student isStudentExist = !StringUtils.isEmpty(stuNo) ? studentRepository.findByStudentNo(stuNo) : null;
                 if (null == isStudentExist) {
-                    // todo set createdTime and creator automatically
+                    // set default password
+                    student.setPassword(SecurityUtil.GetMD5Code(student.getStudentNo()));
                     student.setCreateTime(new Date());
-                    studentRepository.save(student);
+                    Organization organization = organizationRepository.findByOrgName(student.getOrgName());
+                    student.setOrgId(organization.getOrgId());
+                    student.setActive(Constant.ACTIVE);
+//                    studentRepository.save(student);
+                    // add student information into user
+                    List<Student> studentList = new ArrayList<>();
+                    studentList.add(student);
+                    List<Organization> organizationList = new ArrayList<>();
+                    organizationList.add(organization);
+                    insertUserFromStudentList(studentList, organizationList);
                 } else {
                     throw new CustomException(ResultEnum.StudentNoDuplicatedException.getMessage(), ResultEnum.StudentNoDuplicatedException.getCode());
                 }
             } else {
                 // update
                 // not allow to modify some Columns
-                // todo
                 Student currentStudent = studentRepository.findById(student.getStuId()).orElse(null);
                 student.setStudentNo(currentStudent.getStudentNo());
                 student.setAcceptanceDate(currentStudent.getAcceptanceDate());
@@ -319,8 +352,53 @@ public class StudentService {
         return student;
     }
 
-//    @Transactional
-//    public void updateSelfInformation(Student student) {
-//        System.out.println(student.getStuId());
-//    }
+    @Transactional
+    public void updatePassword(PasswordDto passwordDto) {
+        if (null != passwordDto && !StringUtils.isEmpty(passwordDto.getUserName())) {
+            Student currentStudent = studentRepository.findByStudentNo(passwordDto.getUserName());
+            if (null != currentStudent) {
+                if (currentStudent.getPassword().equals(SecurityUtil.GetMD5Code(passwordDto.getOriginalPassword()))) {
+                    currentStudent.setPassword(SecurityUtil.GetMD5Code(passwordDto.getNewPassword()));
+                    // get the same information from User
+                    User sudentUser = userRepository.findByEmployNo(passwordDto.getUserName());
+                    sudentUser.setPassword(currentStudent.getPassword());
+                    studentRepository.save(currentStudent);
+                    userRepository.save(sudentUser);
+                } else
+                    throw new CustomException(ResultEnum.OriginalPasswordErrorException.getMessage(), ResultEnum.OriginalPasswordErrorException.getCode());
+            } else {
+                logger.info("登录的学号信息被更改，用户不存在");
+                throw new CustomException(ResultEnum.StudentNoInfoException.getMessage(), ResultEnum.StudentNoInfoException.getCode());
+            }
+        } else
+            throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
+    }
+
+    // todo 多线程
+    private void insertUserFromStudentList(List<Student> studentList, List<Organization> organizationList) {
+        if (studentList.size() > 0) {
+            int organizationLength = organizationList.size();
+            List<User> userList = new ArrayList<>();
+            studentList.forEach(student -> {
+                User user = new User();
+                BeanUtils.copyProperties(student, user);
+                user.setEmployNo(student.getStudentNo());
+                user.setEmployName(student.getStudentName());
+//                user.setPassword(student.getPassword());
+                user.setTelephone(student.getMobileNo());
+                user.setUserType(Constant.USER_TYPE_STUDENT);
+                user.setStatus(Double.parseDouble(Constant.USER_ENABLE));
+                user.setUserId(UUID.randomUUID().toString().replace("-", ""));
+                // set Organization
+                for (int i = 0; i < organizationLength; i++) {
+                    if (student.getOrgName().equals(organizationList.get(i).getOrgName())) {
+                        user.setOrganization(organizationList.get(i));
+                        break;
+                    }
+                }
+                userList.add(user);
+            });
+            userService.insertUserList(userList);
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.zhbit.xuexin.controller.student;
 
 import com.zhbit.xuexin.common.util.ResponseUtil;
+import com.zhbit.xuexin.dto.PasswordDto;
 import com.zhbit.xuexin.model.Student;
 import com.zhbit.xuexin.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,12 @@ public class StudentSelfController {
     @PostMapping("/update")
     public ResponseEntity update(@RequestBody Student student) {
         studentService.handleSave(student);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
+
+    @PostMapping("/updatePassword")
+    public ResponseEntity updatePassword(@RequestBody PasswordDto passwordDto) {
+        studentService.updatePassword(passwordDto);
         return ResponseUtil.success(HttpStatus.OK);
     }
 }

@@ -34,7 +34,7 @@ public class User implements Serializable {
     private String telephone;
 
     @Column(name = "STATUS")
-    private double status;
+    private double status; // 0 -> 启用, 1 -> 禁用
 
     @Column(name = "ADDRESS", length = 200)
     private String address;
@@ -46,7 +46,7 @@ public class User implements Serializable {
     private String password;
 
     @Column(name = "USER_TYPE", length = 2)
-    private String userType; // 0 -> Teacher, 1 -> Student, 2 -> Admin
+    private String userType; // 0 -> Teacher, 1 -> Student, 2 -> Admin, 3 -> Company
 
     @Column(name = "PARENT_ORG_ID", length = 32)
     private String parentOrgId;

@@ -7,8 +7,13 @@ import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.dto.CompanyDto;
 import com.zhbit.xuexin.dto.OrderDetailDto;
+import com.zhbit.xuexin.dto.PasswordDto;
 import com.zhbit.xuexin.model.Company;
+import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.repository.CompanyRepository;
+import com.zhbit.xuexin.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +32,13 @@ import java.util.List;
 @Service
 public class CompanyService {
 
+    private static Logger logger = LoggerFactory.getLogger(CompanyService.class);
+
     @Autowired
     CompanyRepository companyRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Transactional
     public void registerCompany(Company company) {
@@ -171,6 +181,43 @@ public class CompanyService {
         if (!StringUtils.isEmpty(soleCode)) {
             Company company = companyRepository.findBySoleCode(soleCode);
             return company;
+        } else
+            throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
+    }
+
+    @Transactional
+    public void updateInfo(Company company) {
+        if (null != company) {
+            Company currentCompany = companyRepository.findBySoleCode(company.getSoleCode());
+            if (currentCompany != null && company.getId().equals(currentCompany.getId())) {
+                // the same object
+                company.setCompanyName(currentCompany.getCompanyName());
+                companyRepository.save(company);
+            } else {
+                logger.info("ID 或 SoleCode 被更改");
+                throw new CustomException(ResultEnum.UpdateCompanyInfoException.getMessage(), ResultEnum.UpdateCompanyInfoException.getCode());
+            }
+        }
+    }
+
+    @Transactional
+    public void updatePasswordInfo(PasswordDto passwordDto) {
+        if (null != passwordDto && !StringUtils.isEmpty(passwordDto.getUserName())) {
+            Company currentCompany = companyRepository.findBySoleCode(passwordDto.getUserName());
+            if (null != currentCompany) {
+                if (currentCompany.getPassword().equals(SecurityUtil.GetMD5Code(passwordDto.getOriginalPassword()))) {
+                    currentCompany.setPassword(SecurityUtil.GetMD5Code(passwordDto.getNewPassword()));
+                    // get the same information from User
+                    User companyUser = userRepository.findByEmployNo(passwordDto.getUserName());
+                    companyUser.setPassword(currentCompany.getPassword());
+                    companyRepository.save(currentCompany);
+                    userRepository.save(companyUser);
+                } else
+                    throw new CustomException(ResultEnum.OriginalPasswordErrorException.getMessage(), ResultEnum.OriginalPasswordErrorException.getCode());
+            } else {
+                logger.info("登录的公司SoleCode 被更改，用户不存在");
+                throw new CustomException(ResultEnum.SoleCodeInfoException.getMessage(), ResultEnum.SoleCodeInfoException.getCode());
+            }
         } else
             throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
     }
