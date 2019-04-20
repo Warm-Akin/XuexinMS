@@ -1,5 +1,6 @@
 package com.zhbit.xuexin.controller.admin;
 
+import com.zhbit.xuexin.common.constant.HttpCode;
 import com.zhbit.xuexin.common.util.ResponseUtil;
 import com.zhbit.xuexin.dto.TeacherDto;
 import com.zhbit.xuexin.model.Teacher;
@@ -10,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/xuexin/security/admin/teacher")
@@ -43,6 +46,12 @@ public class TeacherController {
     public ResponseEntity uploadTeacherList(MultipartFile file) {
         teacherService.uploadTeacherList(file);
         return ResponseUtil.success(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/removeTeachers")
+    public ResponseEntity removeStudents(@RequestBody List<Teacher> teachers) {
+        teacherService.delete(teachers);
+        return ResponseUtil.success(HttpCode.SUCCESS);
     }
 
 }

@@ -38,6 +38,7 @@ import javax.persistence.criteria.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Executor;
 
 @Service
 public class StudentService {
@@ -54,10 +55,16 @@ public class StudentService {
     UserService userService;
 
     @Autowired
+    OrganizationService organizationService;
+
+    @Autowired
     OrganizationRepository organizationRepository;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    Executor executor;
 
     public PageResultVO<Student> findAll(Integer page, Integer pageSize) {
         // page's value start at '0'
@@ -206,7 +213,6 @@ public class StudentService {
 
     public void uploadStudentList(MultipartFile file) {
         if (null != file) {
-            // todo import
             Workbook wb = ExcelUtil.getWorkbookFromFile(file);
             if (wb != null) {
                 Sheet sheet = wb.getSheetAt(0);
@@ -215,6 +221,8 @@ public class StudentService {
                 Row row = rowIterator.next();
                 List<Student> studentList = new ArrayList<>();
                 int rowIndex = 1;
+                // for check organization name
+                List<Organization> organizationList = organizationService.findAllActive();
                 while (rowIterator.hasNext()) {
                     row = rowIterator.next();
                     rowIndex += 1;
@@ -225,8 +233,15 @@ public class StudentService {
                         student.setStudentName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_NAME)));
                         student.setSex(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_STUDENT_SEX)));
                         student.setIdcardNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ID_CARD_NO)));
-                        student.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ORGANIZATION_NAME)));
-                        // todo 学院(判断是否存在)
+                        String organizationName = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_ORGANIZATION_NAME));
+                        // check orgName from file
+                        String orgId = organizationService.checkOrgNameReturnOrgId(organizationName, organizationList);
+                        if (null != orgId && !StringUtils.isEmpty(orgId)) {
+                            student.setOrgName(organizationName);
+                            student.setOrgId(orgId);
+                        }
+                        else
+                            throw new CustomException(String.format(ResultEnum.OrganizationNameNotFoundException.getMessage(), String.valueOf(rowIndex)), ResultEnum.OrganizationNameNotFoundException.getCode());
                         student.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_NAME)));
                         student.setMajorCategories(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_CATEGORY)));
                         student.setClassName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_CLASSNAME)));
@@ -256,13 +271,13 @@ public class StudentService {
                 }
                 // do save in jdbcTemplate -> 去重
                 // todo
-                saveStudentListForUpload(studentList);
+                saveStudentListForUpload(studentList, organizationList);
             }
         } else
             throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
     }
 
-    private void saveStudentListForUpload(List<Student> studentList) {
+    private void saveStudentListForUpload(List<Student> studentList, List<Organization> organizationList) {
         List<Student> studentExistList = studentRepository.findAll();
         List<Student> duplicateStudentNoList = new ArrayList<>();
         List<Student> newInsertStudentList = new ArrayList<>();
@@ -274,13 +289,24 @@ public class StudentService {
                 // set ID and ACTIVE
                 student.setStuId(UUID.randomUUID().toString().replace("-", ""));
                 student.setActive(Constant.ACTIVE);
+                student.setPassword(SecurityUtil.GetMD5Code(student.getStudentNo()));
                 newInsertStudentList.add(student);
             }
         });
         // insert the new records
-        if (!newInsertStudentList.isEmpty())
-            insertStudents(newInsertStudentList); // todo 学院id password
-        // todo duplicateStudentList
+        if (!newInsertStudentList.isEmpty()) {
+            insertStudents(newInsertStudentList);
+            asyncInsertHandler(newInsertStudentList, organizationList);
+        }
+        // duplicateStudentList exception
+        if (!duplicateStudentNoList.isEmpty()) {
+            List<String> duplicateStudentNo = new ArrayList<>();
+            duplicateStudentNoList.forEach(student -> {
+                duplicateStudentNo.add(student.getStudentNo());
+            });
+            throw new CustomException(String.format(ResultEnum.StudentNoUploadException.getMessage(), duplicateStudentNo), ResultEnum.StudentNoUploadException.getCode());
+        }
+
     }
 
     private Boolean compareStudentNo(Student student, List<Student> studentExistList) {
@@ -299,10 +325,10 @@ public class StudentService {
     }
 
     private int insertStudents(List<Student> students) {
-        // todo 学院id
         String sql = "INSERT INTO t_students(STU_ID, STUDENTNO, STUNAME, SEX, IDCARDNO, ORG_NAME, MAJOR ,MAJORCATEGORIES, CLASSNAME, POLITICALSTATUS, NATION, NATIVEPLACE," +
-                " FROM_PLACE, EDUCATIONSYSTEM, SCHOOLINGLENGTH, CULTIVATEDIRECTION, ACCEPTANCEDATE, MIDDLESCHOOL, EMAIL, MOBILENO, FAMILYTELNO, POSTCODE, TRAVELRANGE, ADDRESS, SKILL, GRADE, ACTIVE, BIRTHDAY) " +
-                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                " FROM_PLACE, EDUCATIONSYSTEM, SCHOOLINGLENGTH, CULTIVATEDIRECTION, ACCEPTANCEDATE, MIDDLESCHOOL, EMAIL, MOBILENO, FAMILYTELNO, POSTCODE, TRAVELRANGE, ADDRESS," +
+                " SKILL, GRADE, ACTIVE, BIRTHDAY, ORG_ID, PASSWORD) " +
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 
             @Override
@@ -336,6 +362,8 @@ public class StudentService {
                 preparedStatement.setString(26, student.getGrade());
                 preparedStatement.setInt(27, student.getActive());
                 preparedStatement.setDate(28, new java.sql.Date(student.getBirthday().getTime()));
+                preparedStatement.setString(29, student.getOrgId());
+                preparedStatement.setString(30, student.getPassword());
             }
 
             @Override
@@ -374,7 +402,20 @@ public class StudentService {
             throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
     }
 
-    // todo 多线程
+    // 异步线程执行插入
+    private void asyncInsertHandler(List<Student> studentList, List<Organization> organizationList) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    insertUserFromStudentList(studentList, organizationList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     private void insertUserFromStudentList(List<Student> studentList, List<Organization> organizationList) {
         if (studentList.size() > 0) {
             int organizationLength = organizationList.size();
@@ -401,4 +442,34 @@ public class StudentService {
             userService.insertUserList(userList);
         }
     }
+
+    @Transactional
+    public void delete(List<Student> studentList) {
+        if (!studentList.isEmpty()) {
+            List<String> employNoList = new ArrayList<>();
+            studentList.forEach(student -> {
+                student.setActive(Constant.INACTIVE);
+                employNoList.add(student.getStudentNo());
+            });
+            studentRepository.saveAll(studentList);
+            // async set INACTIVE information to user
+            asyncRemoveHandler(employNoList);
+        } else
+            throw new CustomException(ResultEnum.StudentDeleteFailedException.getMessage(), ResultEnum.StudentDeleteFailedException.getCode());
+    }
+
+    // 异步线程执行删除
+    private void asyncRemoveHandler(List<String> employNoList) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    userService.removeUsersFromStudentList(employNoList);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
 }

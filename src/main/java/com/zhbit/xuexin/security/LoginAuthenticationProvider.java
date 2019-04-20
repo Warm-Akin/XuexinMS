@@ -35,7 +35,13 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
         User user = loginService.validateUserLogin(userName, password);
         if (null == user)
-            throw new BadCredentialsException("用户名或密码失败");
+            throw new BadCredentialsException("用户名或密码错误");
+        else {
+            // user is not null
+            // trim '.' -> status: 0.0 / 1.0
+            if (String.valueOf(user.getStatus()).substring(0, 1).equals("1"))
+                throw new BadCredentialsException("该用户已被禁用，请联系管理员");
+        }
         UserContext userContext = new UserContext();
         userContext.setUser(user);
         userContext.setUsername(userName);

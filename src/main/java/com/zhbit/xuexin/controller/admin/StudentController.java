@@ -1,5 +1,6 @@
 package com.zhbit.xuexin.controller.admin;
 
+import com.zhbit.xuexin.common.constant.HttpCode;
 import com.zhbit.xuexin.common.util.ResponseUtil;
 import com.zhbit.xuexin.dto.StudentDto;
 import com.zhbit.xuexin.model.Student;
@@ -45,6 +46,12 @@ public class StudentController {
     @PostMapping(value = "/findByConditions")
     public ResponseEntity findStudentsByConditions(@RequestBody StudentDto studentDto) {
         return ResponseUtil.success(studentService.findByConditions(studentDto));
+    }
+
+    @PostMapping(value = "/removeStudents")
+    public ResponseEntity removeStudents(@RequestBody List<Student> studentList) {
+        studentService.delete(studentList);
+        return ResponseUtil.success(HttpCode.SUCCESS);
     }
 
 }

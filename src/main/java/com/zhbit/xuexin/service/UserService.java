@@ -1,5 +1,6 @@
 package com.zhbit.xuexin.service;
 
+import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.SecurityUtil;
@@ -15,9 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -87,7 +88,7 @@ public class UserService {
                 preparedStatement.setString(3, user.getEmployName());
                 preparedStatement.setString(4, user.getSex());
                 preparedStatement.setString(5, user.getOrganization().getOrgId());
-                preparedStatement.setDate(6, new java.sql.Date(user.getCreateTime().getTime()));
+                preparedStatement.setDate(6, new java.sql.Date(new Date().getTime()));
                 preparedStatement.setString(7, user.getTelephone());
                 preparedStatement.setDouble(8, user.getStatus());
                 preparedStatement.setString(9, user.getEmail());
@@ -102,4 +103,14 @@ public class UserService {
         }).length;
     }
 
+    @Transactional
+    public void removeUsersFromStudentList(List<String> employNoList) {
+        if (!employNoList.isEmpty()) {
+            List<User> userList = userRepository.findByEmployNoList(employNoList);
+            if (!userList.isEmpty()) {
+                userList.forEach(user -> user.setStatus(Double.parseDouble(Constant.USER_DISABLE)));
+                userRepository.saveAll(userList);
+            }
+        }
+    }
 }

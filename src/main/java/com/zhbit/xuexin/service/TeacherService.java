@@ -189,7 +189,6 @@ public class TeacherService {
                         teacher.setSex(sex);
                         Date birthday = !"".equals(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY))) ? DateUtil.formatDate(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY)).replaceAll("-", "")) : null;
                         teacher.setBirthday(birthday);
-                        // todo check orgName
                         teacher.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ORGNAME)));
                         teacher.setTelNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_TELNO)));
                         teacher.setEmail(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_EAMIL)));
@@ -257,8 +256,9 @@ public class TeacherService {
         return isExist;
     }
 
+    // todo 学院id
+
     private int insertTeachers(List<Teacher> teachers) {
-        // todo 学院id
         String sql = "INSERT INTO t_teacherinfo(ID, EMPLOY_NO, EMPLOY_NAME, SEX, BIRTHDAY, ORG_NAME, TELNO ,EMAIL, ADDRESS, CATEGORY, EDUCATION, DEGREE," +
                 " DUTY, ACDEMICTITLE, INVIGILATORFLAG, RESEARCHDIRECTION, INTRODUCE, MAJOR, GRADUATE, QUALIFICATIONFLAG, JOBSTATUS, ISLAB, ISOUTHIRE, POLITICALSTATUS, NATION, ACTIVE) " +
                 " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -303,5 +303,14 @@ public class TeacherService {
                 return teachers.size();
             }
         }).length;
+    }
+
+    @Transactional
+    public void delete(List<Teacher> teachers) {
+        if (!teachers.isEmpty()) {
+            teachers.forEach(teacher -> teacher.setActive(Constant.INACTIVE));
+            teacherRepository.saveAll(teachers);
+        } else
+            throw new CustomException(ResultEnum.TeacherDeleteFailedException.getMessage(), ResultEnum.TeacherDeleteFailedException.getCode());
     }
 }
