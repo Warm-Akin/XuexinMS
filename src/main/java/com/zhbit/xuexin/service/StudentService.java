@@ -239,8 +239,7 @@ public class StudentService {
                         if (null != orgId && !StringUtils.isEmpty(orgId)) {
                             student.setOrgName(organizationName);
                             student.setOrgId(orgId);
-                        }
-                        else
+                        } else
                             throw new CustomException(String.format(ResultEnum.OrganizationNameNotFoundException.getMessage(), String.valueOf(rowIndex)), ResultEnum.OrganizationNameNotFoundException.getCode());
                         student.setMajor(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_NAME)));
                         student.setMajorCategories(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_MAJOR_CATEGORY)));
@@ -270,7 +269,6 @@ public class StudentService {
                         throw new CustomException(String.format(ResultEnum.StudentUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.StudentUploadIncomplete.getCode());
                 }
                 // do save in jdbcTemplate -> 去重
-                // todo
                 saveStudentListForUpload(studentList, organizationList);
             }
         } else
@@ -304,9 +302,9 @@ public class StudentService {
             duplicateStudentNoList.forEach(student -> {
                 duplicateStudentNo.add(student.getStudentNo());
             });
-            throw new CustomException(String.format(ResultEnum.StudentNoUploadException.getMessage(), duplicateStudentNo), ResultEnum.StudentNoUploadException.getCode());
+            throw new CustomException(String.format(ResultEnum.StudentNoUploadException.getMessage(), newInsertStudentList.size(), duplicateStudentNo),
+                    ResultEnum.StudentNoUploadException.getCode());
         }
-
     }
 
     private Boolean compareStudentNo(Student student, List<Student> studentExistList) {

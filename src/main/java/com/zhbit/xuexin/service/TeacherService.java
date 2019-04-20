@@ -6,7 +6,9 @@ import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.DateUtil;
 import com.zhbit.xuexin.common.util.ExcelUtil;
+import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.dto.TeacherDto;
+import com.zhbit.xuexin.model.Organization;
 import com.zhbit.xuexin.model.Teacher;
 import com.zhbit.xuexin.repository.TeacherRepository;
 import org.apache.poi.ss.usermodel.Row;
@@ -35,6 +37,9 @@ public class TeacherService {
 
     @Autowired
     TeacherRepository teacherRepository;
+
+    @Autowired
+    OrganizationService organizationService;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -170,6 +175,8 @@ public class TeacherService {
                 Row row = rowIterator.next();
                 List<Teacher> teacherList=new ArrayList<>();
                 int rowIndex=1;
+                // for check organization name
+                List<Organization> organizationList = organizationService.findAllActive();
                 while (rowIterator.hasNext()) {
                     row = rowIterator.next();
                     rowIndex += 1;
@@ -189,7 +196,14 @@ public class TeacherService {
                         teacher.setSex(sex);
                         Date birthday = !"".equals(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY))) ? DateUtil.formatDate(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_BIRTHDAY)).replaceAll("-", "")) : null;
                         teacher.setBirthday(birthday);
-                        teacher.setOrgName(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ORGNAME)));
+                        // check orgName
+                        String orgName = ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ORGNAME));
+                        String orgId = organizationService.checkOrgNameReturnOrgId(orgName, organizationList);
+                        if (null != orgId && !StringUtils.isEmpty(orgId)) {
+                            teacher.setOrgName(orgName);
+                            teacher.setOrgId(orgId);
+                        } else
+                            throw new CustomException(String.format(ResultEnum.OrganizationNameNotFoundException.getMessage(), String.valueOf(rowIndex)), ResultEnum.OrganizationNameNotFoundException.getCode());
                         teacher.setTelNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_TELNO)));
                         teacher.setEmail(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_EAMIL)));
                         teacher.setAddress(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_TEACHER_ADDRESS)));
@@ -213,7 +227,7 @@ public class TeacherService {
                     } else
                         throw new CustomException(String.format(ResultEnum.TeacherUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.TeacherUploadIncomplete.getCode());
                 }
-                // do save in jdbcTemplate -> 去重
+                // do filter List before save
                 saveTeacherListForUpload(teacherList);
             } else
             throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
@@ -231,14 +245,23 @@ public class TeacherService {
             else {
                 // set ID and ACTIVE
                 teacher.setTeacherId(UUID.randomUUID().toString().replace("-", ""));
+                teacher.setPassword(SecurityUtil.GetMD5Code(teacher.getTeacherNo()));
                 teacher.setActive(Constant.ACTIVE);
                 newInsertTeacherList.add(teacher);
             }
         });
         // insert the new records
         if (!newInsertTeacherList.isEmpty())
-            insertTeachers(newInsertTeacherList); // todo 学院id password
-        // todo duplicateTeacherList
+            insertTeachers(newInsertTeacherList);
+        // handle duplicateTeacherNoList
+        if (!duplicateTeacherNoList.isEmpty()) {
+            List<String> duplicateTeacherNo = new ArrayList<>();
+            duplicateTeacherNoList.forEach(teacher -> {
+                duplicateTeacherNo.add(teacher.getTeacherNo());
+            });
+            throw new CustomException(String.format(ResultEnum.TeacherNoUploadException.getMessage(), newInsertTeacherList.size(), duplicateTeacherNo),
+                    ResultEnum.TeacherNoUploadException.getCode());
+        }
     }
 
     private Boolean compareTeacherNo(Teacher teacher, List<Teacher> teacherExistList) {
@@ -256,12 +279,11 @@ public class TeacherService {
         return isExist;
     }
 
-    // todo 学院id
-
     private int insertTeachers(List<Teacher> teachers) {
         String sql = "INSERT INTO t_teacherinfo(ID, EMPLOY_NO, EMPLOY_NAME, SEX, BIRTHDAY, ORG_NAME, TELNO ,EMAIL, ADDRESS, CATEGORY, EDUCATION, DEGREE," +
-                " DUTY, ACDEMICTITLE, INVIGILATORFLAG, RESEARCHDIRECTION, INTRODUCE, MAJOR, GRADUATE, QUALIFICATIONFLAG, JOBSTATUS, ISLAB, ISOUTHIRE, POLITICALSTATUS, NATION, ACTIVE) " +
-                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                " DUTY, ACDEMICTITLE, INVIGILATORFLAG, RESEARCHDIRECTION, INTRODUCE, MAJOR, GRADUATE, QUALIFICATIONFLAG, JOBSTATUS, ISLAB, ISOUTHIRE," +
+                " POLITICALSTATUS, NATION, ACTIVE, ORG_ID, PASSWORD) " +
+                " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         return jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 
             @Override
@@ -296,6 +318,8 @@ public class TeacherService {
                 preparedStatement.setString(24, teacher.getPoliticalStatus());
                 preparedStatement.setString(25, teacher.getNation());
                 preparedStatement.setInt(26, teacher.getActive());
+                preparedStatement.setString(27, teacher.getOrgId());
+                preparedStatement.setString(28, teacher.getPassword());
             }
 
             @Override

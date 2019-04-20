@@ -171,7 +171,7 @@ public class CourseService {
                 // Ignore the title row
                 Row row = rowIterator.next();
                 List<Course> courseList = new ArrayList<>();
-                int rowIndex=1;
+                int rowIndex = 1;
                 while (rowIterator.hasNext()) {
                     row = rowIterator.next();
                     rowIndex += 1;
@@ -185,14 +185,13 @@ public class CourseService {
                         course.setTotalHours(Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_TOTAL_HOURS))));
                         course.setLabHours(Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_LAB_HOURS))));
                         course.setSelectedCourseNo(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_SELECTED_COURSE_NO)));
-
-                        // todo check
+                        // check 限选人数 >= 选择人数
                         Double limitStudentNum = Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_LIMIT_STUDENT_NUM)));
                         Double studentNum = Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_STUDENT_NUM)));
                         if (studentNum <= limitStudentNum) {
                             course.setLimitStudentNum(limitStudentNum);
                             course.setStudentNum(studentNum);
-                        } else // todo 限选人数 > 选择人数
+                        } else //  限选人数 > 选择人数
                             throw new CustomException(String.format(ResultEnum.CourseInfoError.getMessage(), String.valueOf(rowIndex)), ResultEnum.CourseInfoError.getCode());
                         Double credit = Double.parseDouble(ExcelUtil.getStringCellValue(row.getCell(Constant.INDEX_COURSE_CREDIT)));
                         course.setCredit(credit);
@@ -206,7 +205,7 @@ public class CourseService {
                     } else
                         throw new CustomException(String.format(ResultEnum.CourseUploadIncomplete.getMessage(), String.valueOf(rowIndex)), ResultEnum.CourseUploadIncomplete.getCode());
                 }
-                // do save in jdbcTemplate -> 去重
+                // do save in jdbcTemplate
                 saveCourseListForUpload(courseList);
             } else
                 throw new CustomException(ResultEnum.FileIsNullException.getMessage(), ResultEnum.FileIsNullException.getCode());
@@ -231,14 +230,20 @@ public class CourseService {
         // insert the new records
         if (!newInsertCourseList.isEmpty())
             insertCourses(newInsertCourseList);
-        // todo duplicateCourseCodeList
+        // duplicateCourseCodeList
+        if (!duplicateCourseCodeList.isEmpty()) {
+            List<String> duplicateCourseCode = new ArrayList<>();
+            duplicateCourseCodeList.forEach(course -> duplicateCourseCode.add(course.getCourseCode()));
+            throw new CustomException(String.format(ResultEnum.CourseCodeUploadException.getMessage(), newInsertCourseList.size(), duplicateCourseCode),
+                    ResultEnum.CourseCodeUploadException.getCode());
+        }
     }
 
     private Boolean compareCourseCode(Course course, List<Course> courseExistList) {
         int listSize = courseExistList.size();
         Boolean isExist = false;
         for (int i = 0; i < listSize; i++) {
-            if (course.getTeacherNo().trim().equals(courseExistList.get(i).getCourseCode())) {
+            if (course.getCourseCode().trim().equals(courseExistList.get(i).getCourseCode())) {
                 isExist = true;
                 break;
             }
@@ -282,5 +287,14 @@ public class CourseService {
                 return courseList.size();
             }
         }).length;
+    }
+
+    @Transactional
+    public void removeCourses(List<Course> courseList) {
+        if (!courseList.isEmpty()) {
+            courseList.forEach(course -> course.setActive(Constant.INACTIVE));
+            courseRepository.saveAll(courseList);
+        } else
+            throw new CustomException(ResultEnum.CourseDeleteFailedException.getMessage(), ResultEnum.CourseDeleteFailedException.getCode());
     }
 }

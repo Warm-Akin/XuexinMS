@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/xuexin/security/admin/course")
 public class CourseController {
@@ -44,4 +46,11 @@ public class CourseController {
         courseService.uploadCourseInfoList(file);
         return ResponseUtil.success(HttpStatus.OK);
     }
+
+    @PostMapping(value = "/removeCourses")
+    public ResponseEntity removeCourses(@RequestBody List<Course> courseList) {
+        courseService.removeCourses(courseList);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
+
 }
