@@ -39,8 +39,8 @@ public class CourseService {
     JdbcTemplate jdbcTemplate;
 
     // todo add active for search all
-    public List<Course> findAll() {
-        return courseRepository.findAll();
+    public List<Course> findAllActive() {
+        return courseRepository.findByActive(Constant.ACTIVE);
     }
 
     public PageResultVO<Course> findAll(Integer page, Integer pageSize) {
@@ -295,6 +295,6 @@ public class CourseService {
             courseList.forEach(course -> course.setActive(Constant.INACTIVE));
             courseRepository.saveAll(courseList);
         } else
-            throw new CustomException(ResultEnum.CourseDeleteFailedException.getMessage(), ResultEnum.CourseDeleteFailedException.getCode());
+            throw new CustomException(ResultEnum.DeleteFailedException.getMessage(), ResultEnum.DeleteFailedException.getCode());
     }
 }

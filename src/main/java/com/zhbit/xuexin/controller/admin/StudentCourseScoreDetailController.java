@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/xuexin/security/admin/studentCourseDetail")
 public class StudentCourseScoreDetailController {
@@ -37,4 +39,9 @@ public class StudentCourseScoreDetailController {
         return ResponseUtil.success(studentCourseScoreDetailService.findAllActive());
     }
 
+    @PostMapping(value = "/removeDetails")
+    public ResponseEntity removeDetails(@RequestBody List<StudentCourseScoreDetail> detailList) {
+        studentCourseScoreDetailService.removeDetails(detailList);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
 }

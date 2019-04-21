@@ -335,6 +335,6 @@ public class TeacherService {
             teachers.forEach(teacher -> teacher.setActive(Constant.INACTIVE));
             teacherRepository.saveAll(teachers);
         } else
-            throw new CustomException(ResultEnum.TeacherDeleteFailedException.getMessage(), ResultEnum.TeacherDeleteFailedException.getCode());
+            throw new CustomException(ResultEnum.DeleteFailedException.getMessage(), ResultEnum.DeleteFailedException.getCode());
     }
 }

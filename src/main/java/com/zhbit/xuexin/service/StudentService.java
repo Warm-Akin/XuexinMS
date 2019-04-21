@@ -453,7 +453,7 @@ public class StudentService {
             // async set INACTIVE information to user
             asyncRemoveHandler(employNoList);
         } else
-            throw new CustomException(ResultEnum.StudentDeleteFailedException.getMessage(), ResultEnum.StudentDeleteFailedException.getCode());
+            throw new CustomException(ResultEnum.DeleteFailedException.getMessage(), ResultEnum.DeleteFailedException.getCode());
     }
 
     // 异步线程执行删除

@@ -1,4 +1,4 @@
-package com.zhbit.xuexin.controller;
+package com.zhbit.xuexin.controller.admin;
 
 import com.zhbit.xuexin.common.util.ResponseUtil;
 import com.zhbit.xuexin.dto.CourseDto;
@@ -25,9 +25,9 @@ public class CourseController {
         return ResponseUtil.success(courseService.findAll(page, pageSize));
     }
 
-    @GetMapping(value = "/findAll")
+    @GetMapping(value = "/findAllActive")
     public ResponseEntity findAll() {
-        return ResponseUtil.success(courseService.findAll());
+        return ResponseUtil.success(courseService.findAllActive());
     }
 
     @PostMapping("/save")

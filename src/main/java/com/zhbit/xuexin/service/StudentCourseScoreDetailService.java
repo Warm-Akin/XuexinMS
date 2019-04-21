@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.*;
@@ -150,5 +151,14 @@ public class StudentCourseScoreDetailService {
 
     public List<StudentCourseScoreDetail> findAllActive() {
         return studentCourseScoreDetailRepository.findByActive(Constant.ACTIVE);
+    }
+
+    @Transactional
+    public void removeDetails(List<StudentCourseScoreDetail> detailList) {
+        if (!detailList.isEmpty()) {
+            detailList.forEach(detail -> detail.setActive(Constant.INACTIVE));
+            studentCourseScoreDetailRepository.saveAll(detailList);
+        } else
+            throw new CustomException(ResultEnum.DeleteFailedException.getMessage(), ResultEnum.DeleteFailedException.getCode());
     }
 }
