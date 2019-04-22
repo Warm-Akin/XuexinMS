@@ -106,6 +106,35 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.33</version>
         </dependency>
+        <!--pdf 模板-->
+        <!-- https://mvnrepository.com/artifact/org.icepdf.os/icepdf-core -->
+        <dependency>
+            <groupId>org.icepdf.os</groupId>
+            <artifactId>icepdf-core</artifactId>
+            <version>6.2.2</version>
+        </dependency>
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.icepdf/icepdf-viewer &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.icepdf</groupId>-->
+            <!--<artifactId>icepdf-viewer</artifactId>-->
+            <!--&lt;!&ndash;<version>4.1.1-taverna</version>&ndash;&gt;-->
+        <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.icepdf.os/icepdf-viewer -->
+        <dependency>
+            <groupId>org.icepdf.os</groupId>
+            <artifactId>icepdf-viewer</artifactId>
+            <version>6.2.2</version>
+        </dependency>
+        <!--七牛云-->
+        <!-- https://mvnrepository.com/artifact/com.qiniu/qiniu-java-sdk -->
+        <dependency>
+            <groupId>com.qiniu</groupId>
+            <artifactId>qiniu-java-sdk</artifactId>
+            <version>7.2.17</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>

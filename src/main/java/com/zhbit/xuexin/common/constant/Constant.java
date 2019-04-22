@@ -85,5 +85,9 @@ public class Constant {
     public static final Integer INDEX_COURSE_CLASSINFO = 14;
     public static final Integer INDEX_COURSE_MEMO = 15;
 
+    // file path
     public static final String PHOTO_DIRECTORY_PATH = "D:\\xuexinDoc\\studentPHOTO\\";
+    public static final String PDF_IMAGE_DIRECTORY_PATH = "D:\\xuexinDoc\\pdf image\\";
+    public static final String PDF_TEMPLATE_DIRECTORY_PATH = "D:\\xuexinDoc\\pdf template\\";
+
 }
