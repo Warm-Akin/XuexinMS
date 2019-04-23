@@ -3,9 +3,11 @@ package com.zhbit.xuexin.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "t_pdftemplate")
@@ -29,6 +31,10 @@ public class ResumeTemplate implements Serializable {
 
     @Column(name = "ACTIVE")
     private Integer active;
+
+    @CreatedDate
+    @Column(name = "CREATE_DATE") //
+    private Date createDate; // '创建时间'
 
     public String getTemplateId() {
         return templateId;
@@ -68,5 +74,13 @@ public class ResumeTemplate implements Serializable {
 
     public void setActive(Integer active) {
         this.active = active;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 }

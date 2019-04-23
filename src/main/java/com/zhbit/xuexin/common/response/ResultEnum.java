@@ -31,7 +31,8 @@ public enum ResultEnum {
     SoleCodeInfoException("10001","数据更新失败，该公司用户信息不存在，请联系管理员"),
     OriginalPasswordErrorException("10001","密码更新失败，原密码错误，请检查后重试"),
     StudentNoInfoException("10001","数据更新失败，该学生用户信息不存在，请联系管理员"),
-    OrganizationSaveException("10001", "数据保存失败，该机构名称已存在，请检查后重试");
+    OrganizationSaveException("10001", "数据保存失败，该机构名称已存在，请检查后重试"),
+    ResumeTemplateIdsErrorException("10001", "提交的数据有误，删除失败，请检查后重试");
 
     private String code;
     private String message;

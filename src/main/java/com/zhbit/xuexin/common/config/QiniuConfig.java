@@ -15,6 +15,8 @@ public class QiniuConfig {
 
     private String linkName;
 
+    private String httpPrefix;
+
     public String getAccessKey() {
         return accessKey;
     }
@@ -45,5 +47,13 @@ public class QiniuConfig {
 
     public void setLinkName(String linkName) {
         this.linkName = linkName;
+    }
+
+    public String getHttpPrefix() {
+        return httpPrefix;
+    }
+
+    public void setHttpPrefix(String httpPrefix) {
+        this.httpPrefix = httpPrefix;
     }
 }

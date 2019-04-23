@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.*;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -54,14 +55,15 @@ public class PdfModelService {
             String templateName = fileName.substring(0, fileName.lastIndexOf("."));
 
             // 生成缩略图
-            String imageUrl = generateImageFromDocument(document, templateName);
+            generateImageFromDocument(document, templateName);
 
             // 保存该模板的信息
             ResumeTemplate resumeTemplate = new ResumeTemplate();
             resumeTemplate.setTemplateName(templateName);
             resumeTemplate.setTemplateUrl(templateUrl);
-            resumeTemplate.setImageUrl(imageUrl);
+            resumeTemplate.setImageUrl(qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/pdfModel_" + templateName + ".png");
             resumeTemplate.setActive(Constant.ACTIVE);
+            resumeTemplate.setCreateDate(new Date());
             resumeTemplateRepository.save(resumeTemplate);
         } catch (IOException e) {
             e.printStackTrace();
@@ -103,7 +105,7 @@ public class PdfModelService {
         return pdfUrl;
     }
 
-    private String generateImageFromDocument(Document document, String fileName) {
+    private void generateImageFromDocument(Document document, String fileName) {
         String pdfImageDirectory = Constant.PDF_IMAGE_DIRECTORY_PATH;
         String imageUrl = pdfImageDirectory + "pdfModel_" + fileName + ".png";
         BufferedImage image = null;
@@ -124,9 +126,9 @@ public class PdfModelService {
         } finally {
             image.flush();
         }
-        // 上传图片
+
+        // 上传图片到七牛云
         uploadImageToServer(imageUrl);
-        return imageUrl;
     }
 
     // delete file
@@ -149,10 +151,10 @@ public class PdfModelService {
         Response response = null;
         try {
             response = uploadManager.put(localImageUrl, serverImageName, upToken);
-            //解析上传成功的结果
+            // 解析上传成功的结果
             DefaultPutRet putRet = new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
-            System.out.println(putRet.key);
-            System.out.println(putRet.hash);
+//            System.out.println(putRet.key);
+//            System.out.println(putRet.hash);
         } catch (QiniuException e) {
             e.printStackTrace();
         }
