@@ -42,8 +42,8 @@ public class StudentResumeController {
     }
 
     @GetMapping(value = "/export")
-    public void exportResume(HttpServletResponse response, String studentNo) throws IOException {
-        studentResumeService.exportResume(studentNo, response);
+    public void exportResume(HttpServletResponse response, String studentNo, String resumeTemplateId) {
+        studentResumeService.exportResume(studentNo, resumeTemplateId, response);
     }
 
     @GetMapping(value = "/findImageByStudentNo/{studentNo}", produces = MediaType.IMAGE_JPEG_VALUE)

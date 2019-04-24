@@ -77,6 +77,15 @@ public class StudentResume {
     @Column(name = "ACTIVE", columnDefinition = "tinyint(1) DEFAULT default 1", nullable = false)
     private Integer active;
 
+    @Column(name = "RESUME_URL", length = 255)
+    private String resumeUrl;
+
+    @Column(name = "RESUME_IMAGE_URL", length = 255)
+    private String resumeImageUrl;
+
+    @Column(name = "CREATE_FLAG", length = 10)
+    private String createFlag;
+
     public String getId() {
         return id;
     }
@@ -243,5 +252,29 @@ public class StudentResume {
 
     public void setActive(Integer active) {
         this.active = active;
+    }
+
+    public String getResumeUrl() {
+        return resumeUrl;
+    }
+
+    public void setResumeUrl(String resumeUrl) {
+        this.resumeUrl = resumeUrl;
+    }
+
+    public String getResumeImageUrl() {
+        return resumeImageUrl;
+    }
+
+    public void setResumeImageUrl(String resumeImageUrl) {
+        this.resumeImageUrl = resumeImageUrl;
+    }
+
+    public String getCreateFlag() {
+        return createFlag;
+    }
+
+    public void setCreateFlag(String createFlag) {
+        this.createFlag = createFlag;
     }
 }

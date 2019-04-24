@@ -5,6 +5,7 @@ public class Constant {
     public static final Integer ACTIVE = 1;
     public static final Integer INACTIVE = 0;
     public static final String GRADE_PREFIX = "20";
+    public static final String CREATE_FLAG_TRUE = "true";
 
     // user type
     public static final String USER_TYPE_STUDENT = "1";
@@ -89,5 +90,8 @@ public class Constant {
     public static final String PHOTO_DIRECTORY_PATH = "D:\\xuexinDoc\\studentPHOTO\\";
     public static final String PDF_IMAGE_DIRECTORY_PATH = "D:\\xuexinDoc\\pdf image\\";
     public static final String PDF_TEMPLATE_DIRECTORY_PATH = "D:\\xuexinDoc\\pdf template\\";
+    public static final String STUDENT_RESUME_PDF_PATH = "D:\\xuexinDoc\\studentPDF\\";
+    public static final String STUDENT_RESUME_RESUME_IMAGE_PATH = "D:\\xuexinDoc\\student resume image\\";
+
 
 }

@@ -1,15 +1,8 @@
 package com.zhbit.xuexin.service;
 
-import com.google.gson.Gson;
-import com.qiniu.common.QiniuException;
-import com.qiniu.common.Zone;
-import com.qiniu.http.Response;
-import com.qiniu.storage.Configuration;
-import com.qiniu.storage.UploadManager;
-import com.qiniu.storage.model.DefaultPutRet;
-import com.qiniu.util.Auth;
 import com.zhbit.xuexin.common.config.QiniuConfig;
 import com.zhbit.xuexin.common.constant.Constant;
+import com.zhbit.xuexin.common.util.QiniuUtil;
 import com.zhbit.xuexin.model.ResumeTemplate;
 import com.zhbit.xuexin.repository.ResumeTemplateRepository;
 import org.icepdf.core.exceptions.PDFException;
@@ -35,6 +28,9 @@ public class PdfModelService {
 
     @Autowired
     QiniuConfig qiniuConfig;
+
+    @Autowired
+    QiniuUtil qiniuUtil;
 
     public void handlePdfFile(MultipartFile file) {
         String fileName = file.getOriginalFilename();
@@ -128,7 +124,7 @@ public class PdfModelService {
         }
 
         // 上传图片到七牛云
-        uploadImageToServer(imageUrl);
+        qiniuUtil.uploadImageToServer(imageUrl);
     }
 
     // delete file
@@ -140,24 +136,4 @@ public class PdfModelService {
         }
     }
 
-    private void uploadImageToServer(String localImageUrl) {
-        Auth auth = Auth.create(qiniuConfig.getAccessKey(), qiniuConfig.getSecretKey());
-        String upToken = auth.uploadToken(qiniuConfig.getBucket());
-        // zone2 -> 华南地区
-        Configuration cfg = new Configuration(Zone.zone2());
-        UploadManager uploadManager = new UploadManager(cfg);
-        String serverImageName = localImageUrl.substring(localImageUrl.lastIndexOf("\\") + 1);
-
-        Response response = null;
-        try {
-            response = uploadManager.put(localImageUrl, serverImageName, upToken);
-            // 解析上传成功的结果
-            DefaultPutRet putRet = new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
-//            System.out.println(putRet.key);
-//            System.out.println(putRet.hash);
-        } catch (QiniuException e) {
-            e.printStackTrace();
-        }
-
-    }
 }

@@ -5,35 +5,49 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
+import com.zhbit.xuexin.common.config.QiniuConfig;
 import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
 import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
+import com.zhbit.xuexin.common.util.QiniuUtil;
 import com.zhbit.xuexin.dto.ResumeDto;
+import com.zhbit.xuexin.model.Company;
+import com.zhbit.xuexin.model.ResumeTemplate;
 import com.zhbit.xuexin.model.Student;
 import com.zhbit.xuexin.model.StudentResume;
+import com.zhbit.xuexin.repository.CompanyRepository;
+import com.zhbit.xuexin.repository.ResumeTemplateRepository;
 import com.zhbit.xuexin.repository.StudentRepository;
 import com.zhbit.xuexin.repository.StudentResumeRepository;
+import org.icepdf.core.exceptions.PDFException;
+import org.icepdf.core.exceptions.PDFSecurityException;
+import org.icepdf.core.util.GraphicsRenderingHints;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Service
 public class StudentResumeService {
@@ -43,6 +57,21 @@ public class StudentResumeService {
 
     @Autowired
     StudentRepository studentRepository;
+
+    @Autowired
+    CompanyRepository companyRepository;
+
+    @Autowired
+    ResumeTemplateRepository resumeTemplateRepository;
+
+    @Autowired
+    Executor executor;
+
+    @Autowired
+    QiniuUtil qiniuUtil;
+
+    @Autowired
+    QiniuConfig qiniuConfig;
 
     public StudentResume findByStudentNo(String studentNo) {
 
@@ -61,11 +90,15 @@ public class StudentResumeService {
 
     @Transactional
     public void handleSave(StudentResume studentResume) {
-        // copy the same properties from resume
+        // copy the same properties from studentInfo
         Student student = studentRepository.findByStudentNo(studentResume.getStudentNo());
-        BeanUtils.copyProperties(studentResume, student);
+        studentResume.setResumeUrl("");
+        studentResume.setResumeImageUrl("");
+        // false -> 没有创建pdf
+        studentResume.setCreateFlag("false");
+        BeanUtils.copyProperties(student, studentResume);
         resumeRepository.save(studentResume);
-        studentRepository.save(student);
+        //        studentRepository.save(student);
     }
 
     @Transactional
@@ -91,21 +124,34 @@ public class StudentResumeService {
             throw new CustomException(ResultEnum.ResumePhotoIsNullException.getMessage(), ResultEnum.ResumePhotoIsNullException.getCode());
     }
 
-    public void exportResume(String studentNo, HttpServletResponse response) throws IOException {
+    public void exportResume(String studentNo, String resumeTemplateId, HttpServletResponse response) {
         if (!StringUtils.isEmpty(studentNo)) {
             StudentResume studentResume = resumeRepository.findByStudentNo(studentNo);
-            createPdf(studentResume);
-            exportPdf("C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one-1.pdf", response);
+            String resumeUrl = studentResume.getResumeUrl();
+            String pdfUrlSuffix = "";
+            if (null != resumeUrl && !StringUtils.isEmpty(resumeUrl) && resumeUrl.indexOf(resumeTemplateId) != -1) {
+                // 已经生成过pdf, 返回该pdf的url即可
+                pdfUrlSuffix = resumeUrl;
+            } else {
+                // 生成
+                pdfUrlSuffix = studentNo + "_" + resumeTemplateId;
+                ResumeTemplate resumeTemplate = resumeTemplateRepository.findById(resumeTemplateId).orElse(null);
+                String targetPath = Constant.STUDENT_RESUME_PDF_PATH + pdfUrlSuffix + ".pdf";
+                createPdf(studentResume, targetPath, resumeTemplate.getTemplateUrl());
+                // set pdf path
+                studentResume.setResumeUrl(pdfUrlSuffix);
+                // 异步保存数据和生成缩略图
+                asyncHandlerStudentResume(studentResume, targetPath);
+            }
+            exportPdf(Constant.STUDENT_RESUME_PDF_PATH + pdfUrlSuffix + ".pdf", response);
         }
     }
 
 
-    public void createPdf (StudentResume studentResume) throws IOException {
-        Resource resource = new ClassPathResource("static\\pdfTemplates\\resume-one.pdf");
+    public void createPdf(StudentResume studentResume, String targetPath, String templatePath) {
+        // read template file
+        Resource resource = new FileSystemResource(templatePath);
 
-//        String templatePath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one.pdf";
-        // todo change the target path
-        String targetPath = "C:\\Users\\Ahn\\Desktop\\xuexin_document\\resume-one-1.pdf";
         PdfReader pdfReader = null;
         FileOutputStream outputStream = null;
         ByteArrayOutputStream bos;
@@ -115,7 +161,6 @@ public class StudentResumeService {
             File resourceFile = resource.getFile();
             InputStream pdfInputStream = new FileInputStream(resourceFile);
             outputStream = new FileOutputStream(targetPath);
-//            pdfReader = new PdfReader(templatePath);
             pdfReader = new PdfReader(pdfInputStream);
             bos = new ByteArrayOutputStream();
             stamper = new PdfStamper(pdfReader, bos);
@@ -160,7 +205,6 @@ public class StudentResumeService {
             PdfImportedPage importPage = copy.getImportedPage(new PdfReader(bos.toByteArray()), 1);
             copy.addPage(importPage);
             doc.close();
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -170,25 +214,24 @@ public class StudentResumeService {
         }
     }
 
-    private void exportPdf(String targetPath, HttpServletResponse response) throws IOException {
+    private void exportPdf(String targetPath, HttpServletResponse response) {
         File file = new File(targetPath);
-
-        InputStream ins = new FileInputStream(file);
         /* 设置文件ContentType类型，这样设置，会自动判断下载文件类型 */
         response.setContentType("multipart/form-data");
         /* 设置文件头：最后一个参数是设置下载文件名 */
         response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
-        try{
+        try {
+            InputStream ins = new FileInputStream(file);
             OutputStream os = response.getOutputStream();
             byte[] b = new byte[1024];
             int len;
-            while((len = ins.read(b)) > 0){
-                os.write(b,0,len);
+            while ((len = ins.read(b)) > 0) {
+                os.write(b, 0, len);
             }
             os.flush();
             os.close();
             ins.close();
-        }catch (IOException ioe){
+        } catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
@@ -199,7 +242,8 @@ public class StudentResumeService {
             String photoPath = studentResume.getPhotoPath();
             FileInputStream fileInputStream = new FileInputStream(new File(photoPath));
             byte[] bytes = new byte[fileInputStream.available()];
-            fileInputStream.read(bytes,0, fileInputStream.available());
+            fileInputStream.read(bytes, 0, fileInputStream.available());
+            fileInputStream.close();
             return bytes;
         }
         return null;
@@ -213,6 +257,11 @@ public class StudentResumeService {
             @Override
             public Predicate toPredicate(Root<StudentResume> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
                 List<Predicate> predicateList = new ArrayList<>();
+                // create success
+                Path createFlag = root.get("createFlag");
+                Predicate p0 = criteriaBuilder.equal(createFlag, Constant.CREATE_FLAG_TRUE);
+                predicateList.add(p0);
+
                 Path active = root.get("active");
                 Predicate p = criteriaBuilder.equal(active, Constant.ACTIVE);
                 predicateList.add(p);
@@ -271,6 +320,11 @@ public class StudentResumeService {
                     Predicate p = criteriaBuilder.like(criteriaBuilder.upper(schoolName), "%" + resumeDto.getSchoolName().toUpperCase() + "%");
                     predicateList.add(p);
                 }
+                // create success
+                Path createFlag = root.get("createFlag");
+                Predicate p0 = criteriaBuilder.equal(createFlag, Constant.CREATE_FLAG_TRUE);
+                predicateList.add(p0);
+
                 // active = 1
                 Path active = root.get("active");
                 Predicate p = criteriaBuilder.equal(active, Constant.ACTIVE);
@@ -285,5 +339,83 @@ public class StudentResumeService {
 
         PageResultVO<StudentResume> pageResultVO = new PageResultVO<>(resultPage.getContent(), resultPage.getTotalElements());
         return pageResultVO;
+    }
+
+    // 异步生成缩略图和保存数据
+    private void asyncHandlerStudentResume(StudentResume studentResume, String targetPath) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // generate Image of student resume
+                    String resumeImageUrl = generateImageAfterCreatePdf(targetPath, studentResume.getStudentNo());
+                    // update student resume
+                    updateAfterGenerateResumePdf(studentResume, resumeImageUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    @Transactional
+    protected void updateAfterGenerateResumePdf(StudentResume studentResume, String resumeImageUrl) {
+        studentResume.setResumeImageUrl(resumeImageUrl);
+        studentResume.setCreateFlag(Constant.CREATE_FLAG_TRUE);
+        resumeRepository.save(studentResume);
+    }
+
+    private String generateImageAfterCreatePdf(String targetPath, String studentNo) {
+        org.icepdf.core.pobjects.Document document = new org.icepdf.core.pobjects.Document();
+        String imageUrl = Constant.STUDENT_RESUME_RESUME_IMAGE_PATH + "resume_" + studentNo + ".png";
+        BufferedImage image = null;
+        try {
+            document.setFile(targetPath);
+            // 缩放比例
+            float scale = 1f;
+            // 旋转角度
+            float rotation = 0f;
+            // 只生成pdf第一页 number 从0开始
+            image = (BufferedImage) document.getPageImage(0, GraphicsRenderingHints.SCREEN, org.icepdf.core.pobjects.Page.BOUNDARY_CROPBOX, rotation, scale);
+            RenderedImage rendImage = image;
+            File targetFile = new File(imageUrl);
+            ImageIO.write(rendImage, "png", targetFile);
+        } catch (PDFException e) {
+            e.printStackTrace();
+        } catch (PDFSecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            image.flush();
+        }
+
+        // 上传图片到七牛云
+        qiniuUtil.uploadImageToServer(imageUrl);
+        String serverImageUrl = qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/" + imageUrl.substring(imageUrl.lastIndexOf("\\") + 1);
+        return serverImageUrl;
+    }
+
+    public void exportStudentResume(String resumeUrl, HttpServletResponse response) {
+        String filePath = Constant.STUDENT_RESUME_PDF_PATH + resumeUrl + ".pdf";
+        exportPdf(filePath, response);
+    }
+
+    @Transactional
+    public void exportStudentResumeForCompany(String soleCode, String resumeUrl, HttpServletResponse response) {
+        Company company = companyRepository.findBySoleCode(soleCode);
+        if (null != company) {
+            String limitation = company.getPdfLimit();
+            if (!limitation.equals("-1") && !limitation.equals("0")) {
+                exportStudentResume(resumeUrl, response);
+                String newLimitation = limitation.equals("+9999") ? limitation : String.valueOf(Integer.parseInt(limitation) - 1);
+                company.setPdfLimit(newLimitation);
+                companyRepository.save(company);
+            } else
+                throw new CustomException(ResultEnum.CompanyUploadResumeErrorException.getMessage(), ResultEnum.CompanyUploadResumeErrorException.getCode());
+        } else
+            throw new CustomException(ResultEnum.CompanySoleCodeErrorException.getMessage(), ResultEnum.CompanySoleCodeErrorException.getCode());
     }
 }
