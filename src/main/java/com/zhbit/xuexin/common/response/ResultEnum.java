@@ -34,7 +34,11 @@ public enum ResultEnum {
     OrganizationSaveException("10001", "数据保存失败，该机构名称已存在，请检查后重试"),
     ResumeTemplateIdsErrorException("10001", "提交的数据有误，删除失败，请检查后重试"),
     CompanySoleCodeErrorException("10001", "该企业用户信息不存在，请重新登录验证身份"),
-    CompanyUploadResumeErrorException("10001", "当前账户没有权限下载，请前往会员缴费页面缴费成为会员后重试");
+    CompanyUploadResumeErrorException("10001", "当前账户没有权限下载，请前往会员缴费页面缴费成为会员后重试"),
+    StudentCourseDetailUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试"),
+    StudentInfoNotExistException("10001", "位于[第 %s 行]的学生信息不存在，请检查后重试"),
+    CourseInfoNotExistException("10001", "位于[第 %s 行]的课程信息不存在，请检查后重试"),
+    StudentDetailUploadDuplicateException("10001", "上传成功共有%s条记录，其中有 %s 记录已经存在, 故不允许再次添加");
 
     private String code;
     private String message;

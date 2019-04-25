@@ -86,6 +86,30 @@ public class Constant {
     public static final Integer INDEX_COURSE_CLASSINFO = 14;
     public static final Integer INDEX_COURSE_MEMO = 15;
 
+    // for upload student course detail list
+    public static final Integer STUDENT_NO_INDEX = 0;
+    public static final Integer STUDENT_NAME_INDEX = 1;
+    public static final Integer ORG_NAME_INDEX = 2;
+    public static final Integer CLASS_NAME_INDEX =3;
+    public static final Integer MAJOR_NAME_INDEX = 4;
+    public static final Integer SELECTED_COURSE_NO_INDEX = 5;
+    public static final Integer COURSE_CODE_INDEX = 6;
+    public static final Integer COURSE_NAME_INDEX = 7;
+    public static final Integer COURSE_ACADEMIC_YEAR_INDEX = 8;
+    public static final Integer COURSE_TERM_INDEX = 9;
+    public static final Integer RETAKE_FLAG_INDEX = 10;
+    public static final Integer USUAL_SCORE_INDEX = 11;
+    public static final Integer MIDDLE_SCORE_INDEX = 12;
+    public static final Integer END_SCORE_INDEX = 13;
+    public static final Integer FINAL_SCORE_INDEX = 14;
+    public static final Integer LAB_SCORE_INDEX = 15;
+    public static final Integer CONVERT_SCORE_INDEX = 16;
+    public static final Integer RESIT_SCORE_INDEX = 17;
+    public static final Integer RESIT_SCORE_MEMO_INDEX = 18;
+    public static final Integer REPAIRE_SCORE_INDEX = 19;
+    public static final Integer GRADE_POINT_INDEX = 20;
+    public static final Integer MEMO_INDEX = 21;
+
     // file path
     public static final String PHOTO_DIRECTORY_PATH = "D:\\xuexinDoc\\studentPHOTO\\";
     public static final String PDF_IMAGE_DIRECTORY_PATH = "D:\\xuexinDoc\\pdf image\\";

@@ -12,4 +12,6 @@ public interface StudentRepository extends IBaseRespository<Student, String> {
     Student findByStudentNo(String stuNo);
 
     Student findByStudentNoAndPassword(String userName, String password);
+
+    List<Student> findByActive(Integer active);
 }

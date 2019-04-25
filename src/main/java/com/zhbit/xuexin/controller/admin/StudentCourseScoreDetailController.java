@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -42,6 +43,12 @@ public class StudentCourseScoreDetailController {
     @PostMapping(value = "/removeDetails")
     public ResponseEntity removeDetails(@RequestBody List<StudentCourseScoreDetail> detailList) {
         studentCourseScoreDetailService.removeDetails(detailList);
+        return ResponseUtil.success(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/upload")
+    public ResponseEntity uploadDetailList(MultipartFile file) {
+        studentCourseScoreDetailService.uploadDetailList(file);
         return ResponseUtil.success(HttpStatus.OK);
     }
 }

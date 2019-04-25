@@ -9,8 +9,10 @@ import com.zhbit.xuexin.dto.CompanyDto;
 import com.zhbit.xuexin.dto.OrderDetailDto;
 import com.zhbit.xuexin.dto.PasswordDto;
 import com.zhbit.xuexin.model.Company;
+import com.zhbit.xuexin.model.Organization;
 import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.repository.CompanyRepository;
+import com.zhbit.xuexin.repository.OrganizationRepository;
 import com.zhbit.xuexin.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,7 @@ import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Service
 public class CompanyService {
@@ -39,6 +42,12 @@ public class CompanyService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    OrganizationRepository organizationRepository;
+
+    @Autowired
+    Executor executor;
 
     @Transactional
     public void registerCompany(Company company) {
@@ -52,6 +61,8 @@ public class CompanyService {
                 company.setPdfLimit("-1");
                 company.setActive(Constant.ACTIVE);
                 companyRepository.save(company);
+                // save company information to user
+                asyncSavePasswordToUser(company);
             } else
                 throw new CustomException(ResultEnum.CompanySoleCodeDuplicateException.getMessage(), ResultEnum.CompanySoleCodeDuplicateException.getCode());
         } else
@@ -80,6 +91,8 @@ public class CompanyService {
                 }
             }
             companyRepository.save(company);
+            // save password information to user table
+            asyncSavePasswordToUser(company);
         } else
             throw new CustomException(ResultEnum.CompanyInfoException.getMessage(), ResultEnum.CompanyInfoException.getCode());
     }
@@ -166,7 +179,7 @@ public class CompanyService {
         if (!StringUtils.isEmpty(orderDetailDto.getCompanySoleCode())) {
             Company currentCompany = companyRepository.findBySoleCode(orderDetailDto.getCompanySoleCode());
             if (null != currentCompany) {
-                // todo add a table for payment
+                // todo (添加表或者字段记录企业缴费的日期和有效时长)
                 String remainLimitation = currentCompany.getPdfLimit();
                 String limitation = orderDetailDto.getType().equals("1") ? "+9999" : (!remainLimitation.equals("-1") ? String.valueOf(Integer.parseInt(remainLimitation) + Integer.parseInt(orderDetailDto.getTotalFee())) : orderDetailDto.getTotalFee());
                 currentCompany.setPdfLimit(limitation);
@@ -220,5 +233,33 @@ public class CompanyService {
             }
         } else
             throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
+    }
+
+    private void asyncSavePasswordToUser(Company company) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    User user = userRepository.findByEmployNo(company.getSoleCode());
+                    if (null == user) {
+                        // insert
+                        user = new User();
+                        user.setEmployNo(company.getSoleCode());
+                        user.setStatus(Double.parseDouble(Constant.USER_ENABLE));
+                        user.setCreateTime(new Date());
+                        // organization only for company -> active = 2;
+                        Organization organization = organizationRepository.findByActive(2).get(0);
+                        user.setOrganization(organization);
+                        user.setUserType(Constant.USER_TYPE_COMPANY);
+                    }
+                    // common for insert or update
+                    user.setPassword(company.getPassword());
+                    user.setEmployName(company.getLegalName());
+                    userRepository.save(user);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

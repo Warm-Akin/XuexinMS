@@ -23,10 +23,10 @@ public class ExcelUtil {
         String suffix = fileName.substring(fileName.lastIndexOf("."));
         try {
             in = file.getInputStream();
-            if (".xlsx".equalsIgnoreCase(suffix)) { //2007+
+            if (".xlsx".equalsIgnoreCase(suffix)) { // 2007+
                 wb = WorkbookFactory.create(in);
             } else {
-                wb = new HSSFWorkbook(in); //below the 2007
+                wb = new HSSFWorkbook(in); // below the 2007
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -42,16 +42,16 @@ public class ExcelUtil {
         return wb;
     }
 
-    public static boolean validateData(Row row, int begin, int end) {
-        int count = 0;
-        for (int i = begin; i <= end; i++) {
-            String cellVal = getStringCellValue(row.getCell(i));
-            if (StringUtils.isEmpty(cellVal)) {
-                count++;
-            }
-        }
-        return (count == 0 || count == end - begin + 1);
-    }
+//    public static boolean validateData(Row row, int begin, int end) {
+//        int count = 0;
+//        for (int i = begin; i <= end; i++) {
+//            String cellVal = getStringCellValue(row.getCell(i));
+//            if (StringUtils.isEmpty(cellVal)) {
+//                count++;
+//            }
+//        }
+//        return (count == 0 || count == end - begin + 1);
+//    }
 
     public static boolean isFull(Row trRow, int firstIndex, int lastIndex) {
         int i = 0;
@@ -83,43 +83,5 @@ public class ExcelUtil {
         }
         return "";
     }
-
-//    public void writeExcel(List<String[]> failedInformation, String userType) throws IOException {
-//        String[] sheetHead = {Constant.EMAIL, Constant.COMPANY_NAME, Constant.NAME, Constant.REGION_STAFF_NAME};
-//        String filePath;
-//        if (userType.equals(Constant.ADMIN_VENDOR)) {
-//            filePath = emailConfig.getFailedVendorTextAddress();
-//        } else {
-//            filePath = emailConfig.getFailedStakeholderTextAddress();
-//        }
-//        File file = new File(filePath);
-//        File fileParent = file.getParentFile();
-//        if(!fileParent.exists())
-//            fileParent.mkdirs();
-//
-//        file.createNewFile();
-//
-//        XSSFWorkbook workbook = new XSSFWorkbook();
-//        XSSFSheet sheet = workbook.createSheet();
-//
-//        for (int rowIndex = 0; rowIndex < failedInformation.size() + 1; rowIndex++) {
-//            XSSFRow row = sheet.createRow(rowIndex);
-//            for (int cellIndex = 0; cellIndex < sheetHead.length; cellIndex++) {
-//                if (rowIndex == 0) {
-//                    XSSFCell cell = row.createCell(cellIndex);
-//                    cell.setCellValue(sheetHead[cellIndex]);
-//                } else {
-//                    XSSFCell cell = row.createCell(cellIndex);
-//                    cell.setCellValue(failedInformation.get(rowIndex - 1)[cellIndex]);
-//                }
-//            }
-//        }
-//
-//        FileOutputStream excelFileOutPutStream = new FileOutputStream(filePath);
-//        workbook.write(excelFileOutPutStream);
-//        excelFileOutPutStream.flush();
-//        excelFileOutPutStream.close();
-//
-//    }
 
 }
