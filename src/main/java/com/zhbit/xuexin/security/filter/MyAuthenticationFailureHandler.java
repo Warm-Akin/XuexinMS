@@ -35,6 +35,6 @@ public class MyAuthenticationFailureHandler implements AuthenticationFailureHand
         //        ErrorResponse errorResponse = ErrorResponse.of("ERROR", errorMsg, HttpStatus.UNAUTHORIZED);
 
         Result errorResponse = new Result("ERROR", errorMsg, HttpStatus.UNAUTHORIZED);
-        ResponseUtil.writeErrorResponse(httpServletResponse, errorResponse, HttpStatus.OK);
+        ResponseUtil.writeErrorResponse(httpServletResponse, errorResponse, HttpStatus.UNAUTHORIZED); // HttpStatus.OK
     }
 }

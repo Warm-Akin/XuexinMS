@@ -1,13 +1,13 @@
 package com.zhbit.xuexin.blockchain.request;
 
-import lombok.Data;
+import org.springframework.stereotype.Component;
 
-//@Data
+@Component
 public class Params {
 
     private int type;
 
-    private ChainCode chainCode;
+    private ChainCode chainCodeId;
 
     private CtorMsg ctorMsg;
 
@@ -21,12 +21,12 @@ public class Params {
         this.type = type;
     }
 
-    public ChainCode getChainCode() {
-        return chainCode;
+    public ChainCode getChainCodeId() {
+        return chainCodeId;
     }
 
-    public void setChainCode(ChainCode chainCode) {
-        this.chainCode = chainCode;
+    public void setChainCodeId(ChainCode chainCodeId) {
+        this.chainCodeId = chainCodeId;
     }
 
     public CtorMsg getCtorMsg() {

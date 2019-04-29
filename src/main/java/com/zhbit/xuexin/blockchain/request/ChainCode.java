@@ -1,8 +1,8 @@
 package com.zhbit.xuexin.blockchain.request;
 
-import lombok.Data;
+import org.springframework.stereotype.Component;
 
-//@Data
+@Component
 public class ChainCode {
 
     private String name;

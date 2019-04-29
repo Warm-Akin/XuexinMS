@@ -113,4 +113,8 @@ public class UserService {
             }
         }
     }
+
+    public User findByEmployNo(String username) {
+        return userRepository.findByEmployNo(username);
+    }
 }
