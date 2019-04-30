@@ -1,5 +1,6 @@
 package com.zhbit.xuexin.security;
 
+import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.model.User;
 import com.zhbit.xuexin.security.common.UserContext;
 import com.zhbit.xuexin.service.LoginService;
@@ -33,7 +34,10 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String userName = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
-        User user = loginService.validateUserLogin(userName, password);
+        // decrypt userName and password
+        String decryptUserName = SecurityUtil.decryptByPublic(SecurityUtil.loadPrivateKey(), userName);
+        String decryptPassword = SecurityUtil.decryptByPublic(SecurityUtil.loadPrivateKey(), password);
+        User user = loginService.validateUserLogin(decryptUserName, decryptPassword);
         if (null == user)
             throw new BadCredentialsException("用户名或密码错误");
         else {
@@ -44,8 +48,8 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
         }
         UserContext userContext = new UserContext();
         userContext.setUser(user);
-        userContext.setUsername(userName);
-        userContext.setAuthorities(getUserAuthorities(userName));
+        userContext.setUsername(decryptUserName);
+        userContext.setAuthorities(getUserAuthorities(decryptUserName));
         return new UsernamePasswordAuthenticationToken(userContext, password, userContext.getAuthorities());
     }
 
@@ -54,7 +58,6 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
         return aClass.equals(UsernamePasswordAuthenticationToken.class);
     }
 
-    // todo get the real authentication role
     private List<GrantedAuthority> getUserAuthorities(String username) {
         String role = userService.getUserTypeByUserName(username);
         List<GrantedAuthority> auths = new ArrayList<>();

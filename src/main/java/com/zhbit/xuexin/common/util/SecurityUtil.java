@@ -1,8 +1,6 @@
 package com.zhbit.xuexin.common.util;
 
-import com.mysql.cj.util.Base64Decoder;
-import org.apache.logging.log4j.util.StringBuilders;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import sun.misc.BASE64Decoder;
 
 import javax.crypto.BadPaddingException;
@@ -27,7 +25,8 @@ public class SecurityUtil {
     private final static String[] strDigits = {"0", "1", "2", "3", "4", "5",
             "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
 
-    public SecurityUtil() { }
+    public SecurityUtil() {
+    }
 
     // 返回形式为数字跟字符串
     private static String byteToArrayString(byte bByte) {
@@ -73,25 +72,33 @@ public class SecurityUtil {
         return resultString;
     }
 
-    public static RSAPrivateKey loadPrivateKey() throws IOException, NoSuchAlgorithmException {
+    public static RSAPrivateKey loadPrivateKey() {
         InputStream inputStream = null;
         BufferedReader reader = null;
         BASE64Decoder base64Decoder = new BASE64Decoder();
         StringBuilder stringBuilder = new StringBuilder();
-        inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("rsa-private-key.pem");
-        reader = new BufferedReader(new InputStreamReader(inputStream));
+        ClassPathResource classPathResource = new ClassPathResource("config/rsa_private_key_pkcs8.pem");
+
         String readStr = "";
-        while((readStr = reader.readLine()) != "") {
-            if(readStr.charAt(0) == '-')
-                continue;
-            stringBuilder.append(readStr + "\r");
-        }
-        byte[] keyByte = base64Decoder.decodeBuffer(stringBuilder.toString());
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyByte);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         try {
+            inputStream = classPathResource.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            while ((readStr = reader.readLine()) != null) {
+                if (readStr.charAt(0) == '-')
+                    continue;
+                stringBuilder.append(readStr + "\r");
+            }
+            byte[] keyByte = base64Decoder.decodeBuffer(stringBuilder.toString());
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyByte);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             RSAPrivateKey privateKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
             return privateKey;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
             return null;
@@ -103,7 +110,7 @@ public class SecurityUtil {
         try {
             byte[] bytes = base64Decoder.decodeBuffer(rsaEncryptKey);
             Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.DECRYPT_MODE, loadPrivateKey());
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] result = cipher.doFinal(bytes);
             return new String(result);
         } catch (IOException e) {
