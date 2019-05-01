@@ -2,36 +2,58 @@ package com.zhbit.xuexin.service;
 
 import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
+import com.zhbit.xuexin.common.response.PageResultVO;
 import com.zhbit.xuexin.common.response.ResultEnum;
 import com.zhbit.xuexin.common.util.SecurityUtil;
 import com.zhbit.xuexin.dto.PasswordDto;
-import com.zhbit.xuexin.model.User;
+import com.zhbit.xuexin.model.*;
+import com.zhbit.xuexin.repository.CompanyRepository;
+import com.zhbit.xuexin.repository.OrganizationRepository;
+import com.zhbit.xuexin.repository.StudentRepository;
 import com.zhbit.xuexin.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @Service
 public class UserService {
 
     private static Logger logger = LoggerFactory.getLogger(UserService.class);
 
-
     @Autowired
     UserRepository userRepository;
 
     @Autowired
+    OrganizationRepository organizationRepository;
+
+//    @Autowired
+//    StudentRepository studentRepository;
+//
+//    @Autowired
+//    CompanyRepository companyRepository;
+
+    @Autowired
     JdbcTemplate jdbcTemplate;
+
+//    @Autowired
+//    Executor executor;
 
     public List<User> findAll() {
         return userRepository.findAll();
@@ -117,4 +139,101 @@ public class UserService {
     public User findByEmployNo(String username) {
         return userRepository.findByEmployNo(username);
     }
+
+    public PageResultVO<User> findAllActiveUsers(Integer page, Integer pageSize) {
+        PageRequest pageRequest = PageRequest.of(page - 1, pageSize, getSort());
+        Page<User> userPage = (Page<User>) userRepository.findAll(new Specification<User>() {
+
+            @Override
+            public Predicate toPredicate(Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicateList = new ArrayList<>();
+                Path status = root.get("status");
+                Predicate p = criteriaBuilder.equal(status, Double.parseDouble(Constant.USER_ENABLE));
+                predicateList.add(p);
+
+                Predicate[] predicates = new Predicate[predicateList.size()];
+                predicateList.toArray(predicates);
+                criteriaQuery.where(predicates);
+                return criteriaBuilder.and(predicates);
+            }
+        }, pageRequest);
+        PageResultVO<User> pageResultVO = new PageResultVO<>(userPage.getContent(), userPage.getTotalElements());
+        return pageResultVO;
+    }
+
+    private Sort getSort() {
+        List<Sort.Order> orders = new ArrayList<>();
+        orders.add(new Sort.Order(Sort.Direction.ASC, "employNo"));
+        orders.add(new Sort.Order(Sort.Direction.ASC, "employName"));
+        return new Sort(orders);
+    }
+
+    @Transactional
+    public void saveUser(User user, String organizationName) {
+        if (null != user) {
+            User currentUser = userRepository.findByEmployNo(user.getEmployNo());
+            String password = user.getPassword();
+            if (user.getUserId() == null) {
+                user.setPassword(SecurityUtil.GetMD5Code(password));
+                if (currentUser != null)
+                    throw new CustomException(ResultEnum.UserNameDuplicateException.getMessage(), ResultEnum.UserNameDuplicateException.getCode());
+            } else {
+                // userId != null
+                if (currentUser == null || (null != currentUser && !user.getUserId().equals(currentUser.getUserId()))) {
+                    logger.error("用户EmployNo被修改");
+                    throw new CustomException(ResultEnum.UserNameNotExistException.getMessage(), ResultEnum.UserNameNotExistException.getCode());
+                }
+                if (!password.equals(currentUser.getPassword()))
+                    user.setPassword(SecurityUtil.GetMD5Code(password));
+            }
+            Organization organization = organizationRepository.findByOrgName(organizationName);
+            user.setOrganization(organization);
+            userRepository.save(user);
+//            if (!user.getUserType().equals(Constant.USER_TYPE_ADMIN))
+//                asyncSaveUserToOtherEntity(user);
+        } else
+            throw new CustomException(ResultEnum.ParamsIsNullException.getMessage(), ResultEnum.ParamsIsNullException.getCode());
+    }
+
+//    private void asyncSaveUserToOtherEntity(User user) {
+//        executor.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    insertUserToOtherEntity(user);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
+//
+//    @Transactional
+//    protected void insertUserToOtherEntity(User user) {
+//        String mobileNo = user.getTelephone() != null ? user.getTelephone() : "";
+//        if (user.getUserType().equals(Constant.USER_TYPE_STUDENT)) {
+//            // student
+//            Student student = new Student();
+//            student.setStudentNo(user.getEmployNo());
+//            student.setStudentName(user.getEmployName());
+//            student.setPassword(user.getPassword());
+//            student.setActive(Constant.ACTIVE);
+//            student.setOrgId(user.getOrganization().getOrgId());
+//            student.setMobileNo(mobileNo);
+//            studentRepository.save(student);
+//        } else {
+//            // company
+//            Company company = new Company();
+//            company.setSoleCode(user.getEmployNo());
+//            company.setCreateDate(new Date().toLocaleString());
+//            company.setLegalName(user.getEmployName());
+//            company.setPdfLimit("-1");
+//            company.setUpdateDate(new Date().toLocaleString());
+//            company.setCompanyPhone(mobileNo);
+//            company.setPassword(user.getPassword());
+//            company.setActive(Constant.ACTIVE);
+//            companyRepository.save(company);
+//        }
+//    }
+
 }

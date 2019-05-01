@@ -30,7 +30,7 @@ public class OrganizationService {
     OrganizationRepository organizationRepository;
 
     public List<Organization> findAllActive() {
-        return organizationRepository.findByActive(Constant.ACTIVE);
+        return organizationRepository.findByActive();
     }
 
     // check orgName's validation and return orgId

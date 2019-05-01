@@ -49,15 +49,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PathConfig pathConfig;
 
-//    private static final String loginPath = "/xuexin/login";
-
-
-//    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
@@ -106,6 +97,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-
 
 }

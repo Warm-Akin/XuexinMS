@@ -38,7 +38,9 @@ public enum ResultEnum {
     StudentCourseDetailUploadIncomplete("10001", "位于[第 %s 行]的必填列信息不符合要求，请检查后重试"),
     StudentInfoNotExistException("10001", "位于[第 %s 行]的学生信息不存在，请检查后重试"),
     CourseInfoNotExistException("10001", "位于[第 %s 行]的课程信息不存在，请检查后重试"),
-    StudentDetailUploadDuplicateException("10001", "上传成功共有%s条记录，其中有 %s 记录已经存在, 故不允许再次添加");
+    StudentDetailUploadDuplicateException("10001", "上传成功共有%s条记录，其中有 %s 记录已经存在, 故不允许再次添加"),
+    UserNameNotExistException("10001", "该用户名不存在，请检查数据后重试"),
+    UserNameDuplicateException("10001", "数据保存失败，该登录用户名已存在，请检查后重试");
 
     private String code;
     private String message;

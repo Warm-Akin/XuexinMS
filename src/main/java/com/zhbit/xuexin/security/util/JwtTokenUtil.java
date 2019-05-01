@@ -36,10 +36,6 @@ public class JwtTokenUtil {
         Claims claims = Jwts.claims().setSubject(userContext.getUsername());
         claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
         claims.put("userId", userContext.getUser().getUserId());
-
-//        Map<String, Object> claims = new HashMap<>();
-//        claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(Collectors.toList()));
-//        claims.put("userInfo", userContext.getUser());
         claims.put("sub", userContext.getUsername());
         claims.put("created", new Date());
 
