@@ -393,9 +393,9 @@ public class StudentResumeService {
         }
 
         // 上传图片到七牛云
-        qiniuUtil.uploadImageToServer(imageUrl);
-        String serverImageUrl = qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/" + imageUrl.substring(imageUrl.lastIndexOf("\\") + 1);
-        return serverImageUrl;
+        String serverImageName = qiniuUtil.uploadImageToServer(imageUrl);
+//        String serverImageUrl = qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/" + serverImageName;
+        return qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/" + serverImageName;
     }
 
     public void exportStudentResume(String resumeUrl, HttpServletResponse response) {

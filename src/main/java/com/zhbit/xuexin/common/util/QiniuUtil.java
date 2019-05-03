@@ -12,19 +12,21 @@ import com.zhbit.xuexin.common.config.QiniuConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class QiniuUtil {
 
     @Autowired
     QiniuConfig qiniuConfig;
 
-    public void uploadImageToServer(String localImageUrl) {
+    public String uploadImageToServer(String localImageUrl) {
         Auth auth = Auth.create(qiniuConfig.getAccessKey(), qiniuConfig.getSecretKey());
         String upToken = auth.uploadToken(qiniuConfig.getBucket());
         // zone2 -> 华南地区
         Configuration cfg = new Configuration(Zone.zone2());
         UploadManager uploadManager = new UploadManager(cfg);
-        String serverImageName = localImageUrl.substring(localImageUrl.lastIndexOf("\\") + 1);
+        String serverImageName = UUID.randomUUID().toString().replaceAll("-", "") + "_" +localImageUrl.substring(localImageUrl.lastIndexOf("\\") + 1);
 
         Response response = null;
         try {
@@ -36,5 +38,6 @@ public class QiniuUtil {
         } catch (QiniuException e) {
             e.printStackTrace();
         }
+        return serverImageName;
     }
 }

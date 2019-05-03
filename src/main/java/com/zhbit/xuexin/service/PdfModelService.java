@@ -51,13 +51,14 @@ public class PdfModelService {
             String templateName = fileName.substring(0, fileName.lastIndexOf("."));
 
             // 生成缩略图
-            generateImageFromDocument(document, templateName);
+            String serverTemplateImageUrl = generateImageFromDocument(document, templateName);
 
             // 保存该模板的信息
             ResumeTemplate resumeTemplate = new ResumeTemplate();
             resumeTemplate.setTemplateName(templateName);
             resumeTemplate.setTemplateUrl(templateUrl);
-            resumeTemplate.setImageUrl(qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/pdfModel_" + templateName + ".png");
+//            resumeTemplate.setImageUrl(qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/pdfModel_" + templateName + ".png");
+            resumeTemplate.setImageUrl(qiniuConfig.getHttpPrefix() + qiniuConfig.getLinkName() + "/" + serverTemplateImageUrl);
             resumeTemplate.setActive(Constant.ACTIVE);
             resumeTemplate.setCreateDate(new Date());
             resumeTemplateRepository.save(resumeTemplate);
@@ -101,7 +102,7 @@ public class PdfModelService {
         return pdfUrl;
     }
 
-    private void generateImageFromDocument(Document document, String fileName) {
+    private String generateImageFromDocument(Document document, String fileName) {
         String pdfImageDirectory = Constant.PDF_IMAGE_DIRECTORY_PATH;
         String imageUrl = pdfImageDirectory + "pdfModel_" + fileName + ".png";
         BufferedImage image = null;
@@ -124,7 +125,8 @@ public class PdfModelService {
         }
 
         // 上传图片到七牛云
-        qiniuUtil.uploadImageToServer(imageUrl);
+        String templateServerUrl = qiniuUtil.uploadImageToServer(imageUrl);
+        return templateServerUrl;
     }
 
     // delete file

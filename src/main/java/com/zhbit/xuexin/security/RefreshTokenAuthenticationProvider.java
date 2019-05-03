@@ -65,9 +65,7 @@ public class RefreshTokenAuthenticationProvider {
             Result successResponse = new Result("REFRESH", accessToken);
             ResponseUtil.writeSuccessResponse(response,successResponse);
         } catch (Exception e) {
-//            HttpStatus.OK
             Result errorResponse = new Result("ERROR", e.getMessage(), HttpStatus.UNAUTHORIZED);
-            // HttpStatus.OK todo 参考LoginAuthenticationSuccessHandler
             ResponseUtil.writeErrorResponse(response, errorResponse, HttpStatus.UNAUTHORIZED);
         }
     }
