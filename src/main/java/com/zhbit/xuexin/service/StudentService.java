@@ -93,7 +93,6 @@ public class StudentService {
     }
 
     public PageResultVO<Student> findByConditions(StudentDto studentDto) {
-        // todo check conditions
         Pageable pageable = PageRequest.of(studentDto.getCurrentPage() - 1, studentDto.getPageSize(), getSort());
 //        PageRequest pageRequest = PageRequest.of(studentDto.getCurrentPage() - 1, studentDto.getPageSize(), getSort());
 //        Page<Student> studentPage = studentRepository.findAll(pageRequest);

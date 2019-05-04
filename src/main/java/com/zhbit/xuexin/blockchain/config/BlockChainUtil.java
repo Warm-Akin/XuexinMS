@@ -13,6 +13,8 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 public class BlockChainUtil {
 
@@ -40,7 +42,7 @@ public class BlockChainUtil {
 
     // method
     // 查询
-    private String queryTable(String tableName, String[] keys) throws Exception {
+    public String queryTable(String tableName, String[] keys) {
         try {
             //所有的访问都是HTTP POST
             httpClient = HttpClients.createDefault();
@@ -77,17 +79,25 @@ public class BlockChainUtil {
                 }
             }
             System.out.println("查询表有误，请检查区块链服务端");
-            return null;
         } catch (Exception e) {
-            throw e;
+            try {
+                throw e;
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
         } finally {
             if (null != httpClient) {
-                httpClient.close();
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
+        return null;
     }
 
-    // insert、update、delete
+    // function 可以是 insert、update、delete
     private void callTableFunction(String tableName, String function, String[] args) throws Exception {
         try {
             // 所有的访问都是HTTP POST

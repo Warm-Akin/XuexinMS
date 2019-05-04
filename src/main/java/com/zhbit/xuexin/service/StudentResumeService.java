@@ -1,10 +1,14 @@
 package com.zhbit.xuexin.service;
 
+import com.alibaba.fastjson.JSON;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.*;
+import com.zhbit.xuexin.blockchain.config.BlockChainUtil;
+import com.zhbit.xuexin.blockchain.model.BCResult;
+import com.zhbit.xuexin.blockchain.util.ObjectTransferUtil;
 import com.zhbit.xuexin.common.config.QiniuConfig;
 import com.zhbit.xuexin.common.constant.Constant;
 import com.zhbit.xuexin.common.exception.CustomException;
@@ -73,6 +77,15 @@ public class StudentResumeService {
     @Autowired
     QiniuConfig qiniuConfig;
 
+//    @Autowired
+//    BlockChainUtil blockChainUtil;
+//
+//    @Autowired
+//    ObjectTransferUtil objectTransferUtil;
+
+    //        String tableName = "Students";
+
+
     public StudentResume findByStudentNo(String studentNo) {
 
         StudentResume studentResume = null;
@@ -85,6 +98,13 @@ public class StudentResumeService {
                 BeanUtils.copyProperties(student, studentResume);
             }
         }
+
+//        // todo  query from BlockChain
+//        String[] resumeStringArray = objectTransferUtil.convertToStringArray(studentResume);
+//        String result = blockChainUtil.queryTable(tableName, resumeStringArray);
+//        // transfer result to object
+//        List<BCResult> nv = JSON.parseArray(result, BCResult.class);
+
         return studentResume;
     }
 
@@ -99,6 +119,11 @@ public class StudentResumeService {
         BeanUtils.copyProperties(student, studentResume);
         resumeRepository.save(studentResume);
         //        studentRepository.save(student);
+
+//        // todo save into blockChain
+//        String[] resumeStringArray = objectTransferUtil.convertToStringArray(studentResume);
+//        blockChainUtil.callTableFunction(tableName, "save", resumeStringArray);
+
     }
 
     @Transactional
@@ -157,7 +182,6 @@ public class StudentResumeService {
         ByteArrayOutputStream bos;
         PdfStamper stamper = null;
         try {
-            // todo add
             File resourceFile = resource.getFile();
             InputStream pdfInputStream = new FileInputStream(resourceFile);
             outputStream = new FileOutputStream(targetPath);
@@ -166,11 +190,9 @@ public class StudentResumeService {
             stamper = new PdfStamper(pdfReader, bos);
             AcroFields fields = stamper.getAcroFields();
 
-            // todo 模板没有对应的表单域对象需要跳过
             for (Field field : studentResume.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 try {
-                    // todo 做判空处理
                     if (!"photoPath".equals(field.getName())) {
                         fields.setField(field.getName(), field.get(studentResume).toString());
                     } else {
